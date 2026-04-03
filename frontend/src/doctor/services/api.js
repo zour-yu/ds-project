@@ -10,3 +10,6 @@ export const getDoctorById = (id) => API.get(`/doctors/${id}`);
 
 export const getDoctorAvailability = (id) =>
   API.get(`/doctors/${id}/availability`);
+
+export const createAppointment = (data) =>
+  axios.post("http://localhost:5002/api/appointments", data);

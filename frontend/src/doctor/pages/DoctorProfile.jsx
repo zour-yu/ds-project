@@ -1,12 +1,27 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getDoctorById, getDoctorAvailability } from "../services/api";
+import { createAppointment } from "../services/api";
 
 function DoctorProfile() {
   const { id } = useParams();
 
   const [doctor, setDoctor] = useState(null);
   const [availability, setAvailability] = useState([]);
+
+  const handleBook = async (time, date) => {
+  try {
+    await createAppointment({
+      doctorId: id,
+      date,
+      time
+    });
+
+    alert("Appointment booked!");
+  } catch (err) {
+    alert("Error booking appointment");
+  }
+};
 
   useEffect(() => {
     getDoctorById(id).then((res) => setDoctor(res.data));
@@ -24,24 +39,30 @@ function DoctorProfile() {
       <p>{doctor.hospital}</p>
       <p>{doctor.bio}</p>
 
-      <h2 className="text-xl mt-6">Availability</h2>
 
-      {availability.map((day, index) => (
-        <div key={index} className="mt-2">
-          <p className="font-semibold">{day.date}</p>
+      <h2 className="text-xl mt-6 font-bold">Available Slots</h2>
 
-          <div className="flex gap-2 flex-wrap">
-            {day.slots.map((slot, i) => (
-              <span
-                key={i}
-                className="px-2 py-1 bg-green-200 rounded"
-              >
-                {slot.time}
-              </span>
-            ))}
-          </div>
-        </div>
-      ))}
+{availability.map((day, index) => (
+  <div key={index} className="mt-4">
+    <p className="font-semibold text-lg">{day.date}</p>
+
+    <div className="flex gap-2 flex-wrap mt-2">
+      {day.slots.length > 0 ? (
+        day.slots.map((slot, i) => (
+          <button
+            key={i}
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            onClick={() => handleBook(slot.time, day.date)}
+          >
+            {slot.time}
+          </button>
+        ))
+      ) : (
+        <p className="text-gray-500">No slots available</p>
+      )}
+    </div>
+  </div>
+))}
     </div>
   );
 }
