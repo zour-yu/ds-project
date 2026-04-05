@@ -14,4 +14,7 @@ router.post("/availability", controller.addAvailability);
 router.get("/:id/availability", controller.getDoctorAvailability);
 router.get("/:id", controller.getDoctorById);
 
+router.patch("/book-slot", controller.bookSlot);
+router.patch("/free-slot", controller.freeSlot);
+
 module.exports = router;

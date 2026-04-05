@@ -147,3 +147,65 @@ exports.getDoctorById = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.bookSlot = async (req, res) => {
+    try {
+        const { doctorId, date, time } = req.body;
+
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({ message: "Doctor not found" });
+        }
+
+        const day = doctor.availability.find(d => d.date === date);
+
+        if (!day) {
+            return res.status(404).json({ message: "Date not available" });
+        }
+
+        const slot = day.slots.find(s => s.time === time);
+
+        if (!slot) {
+            return res.status(404).json({ message: "Slot not found" });
+        }
+
+        if (slot.isBooked) {
+            return res.status(400).json({ message: "Already booked" });
+        }
+
+        slot.isBooked = true;
+
+        await doctor.save();
+
+        res.json({ message: "Slot booked successfully" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.freeSlot = async (req, res) => {
+    try {
+        const { doctorId, date, time } = req.body;
+
+        const doctor = await Doctor.findById(doctorId);
+
+        const day = doctor.availability.find(d => d.date === date);
+
+        const slot = day.slots.find(s => s.time === time);
+
+        if (!slot) {
+            return res.status(404).json({ message: "Slot not found" });
+        }
+
+        slot.isBooked = false;
+
+        await doctor.save();
+
+        res.json({ message: "Slot freed successfully" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
