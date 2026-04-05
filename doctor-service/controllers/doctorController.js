@@ -209,3 +209,94 @@ exports.freeSlot = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.deleteAvailability = async (req, res) => {
+    try {
+        const { doctorId, date } = req.body;
+
+        const doctor = await Doctor.findById(doctorId);
+
+        doctor.availability = doctor.availability.filter(
+            d => d.date !== date
+        );
+
+        await doctor.save();
+
+        res.json({ message: "Availability removed" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.updateAvailability = async (req, res) => {
+    try {
+        const { doctorId, date, startTime, endTime, slotDuration } = req.body;
+
+        const doctor = await Doctor.findById(doctorId);
+
+        const day = doctor.availability.find(d => d.date === date);
+
+        if (!day) {
+            return res.status(404).json({ message: "Date not found" });
+        }
+
+        const duration = slotDuration || doctor.slotDuration || 30;
+
+        // 🔹 Generate new slots
+        const generateSlots = (start, end, duration) => {
+            const slots = [];
+            let current = new Date(`1970-01-01T${start}:00`);
+            const endTimeObj = new Date(`1970-01-01T${end}:00`);
+
+            while (current < endTimeObj) {
+                slots.push(current.toTimeString().slice(0, 5));
+                current.setMinutes(current.getMinutes() + duration);
+            }
+
+            return slots;
+        };
+
+        const newTimes = generateSlots(startTime, endTime, duration);
+
+        //  Step 1 — Separate booked and free slots
+        const bookedSlots = day.slots.filter(s => s.isBooked);
+        const freeSlots = day.slots.filter(s => !s.isBooked);
+
+        //  Step 2 — Create new free slots only
+        const newFreeSlots = newTimes.map(time => ({
+            time,
+            isBooked: false
+        }));
+
+        //  Step 3 — Merge booked slots ALWAYS (no matter what)
+        const finalSlotsMap = new Map();
+
+        // add new free slots
+        newFreeSlots.forEach(slot => {
+            finalSlotsMap.set(slot.time, slot);
+        });
+
+        // add booked slots (override if exists)
+        bookedSlots.forEach(slot => {
+            finalSlotsMap.set(slot.time, slot);
+        });
+
+        // 🔥 Step 4 — Convert map → array and sort
+        const finalSlots = Array.from(finalSlotsMap.values()).sort((a, b) =>
+            a.time.localeCompare(b.time)
+        );
+
+        day.slots = finalSlots;
+
+        await doctor.save();
+
+        res.json({
+            message: "Availability updated safely",
+            slots: finalSlots
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

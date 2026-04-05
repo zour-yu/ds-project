@@ -17,4 +17,7 @@ router.get("/:id", controller.getDoctorById);
 router.patch("/book-slot", controller.bookSlot);
 router.patch("/free-slot", controller.freeSlot);
 
+router.delete("/availability", controller.deleteAvailability);
+router.patch("/availability/update", controller.updateAvailability);
+
 module.exports = router;
