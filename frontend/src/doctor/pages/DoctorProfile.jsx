@@ -47,19 +47,21 @@ function DoctorProfile() {
     <p className="font-semibold text-lg">{day.date}</p>
 
     <div className="flex gap-2 flex-wrap mt-2">
-      {day.slots.length > 0 ? (
-        day.slots.map((slot, i) => (
-          <button
-            key={i}
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-            onClick={() => handleBook(slot.time, day.date)}
-          >
-            {slot.time}
-          </button>
-        ))
-      ) : (
-        <p className="text-gray-500">No slots available</p>
-      )}
+      {day.slots.map((slot, i) => (
+  <button
+    key={i}
+    disabled={slot.isBooked}
+    onClick={() => handleBook(slot.time, day.date)}
+    className={`px-3 py-1 rounded transition 
+      ${
+        slot.isBooked
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : "bg-green-500 text-white hover:bg-green-600"
+      }`}
+  >
+    {slot.time}
+  </button>
+))}
     </div>
   </div>
 ))}
