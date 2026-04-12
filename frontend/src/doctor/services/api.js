@@ -13,3 +13,16 @@ export const getDoctorAvailability = (id) =>
 
 export const createAppointment = (data) =>
   axios.post("http://localhost:5002/api/appointments", data);
+
+
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return req;
+});
+
+export default API;

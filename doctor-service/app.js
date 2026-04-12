@@ -5,8 +5,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(require("./middleware/mockAuth"));
 app.use("/api/doctors", require("./routes/doctorRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
 
 
