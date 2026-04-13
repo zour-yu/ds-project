@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  uid: {
+  firebaseId: {
     type: String,
     required: true,
     unique: true,
@@ -24,16 +24,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String
   },
-  profilePicture: {
+  address: {
     type: String
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true
