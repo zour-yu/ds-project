@@ -1,104 +1,62 @@
 import { useEffect, useState } from "react";
-import API from "../services/api";
+import axios from "axios";
 
 function DoctorProfileEdit() {
-  const [doctor, setDoctor] = useState(null);
+  const [doctor, setDoctor] = useState({});
 
-  // 🔹 Load profile
   useEffect(() => {
-    API.get("/doctors/me")
-      .then((res) => setDoctor(res.data))
-      .catch((err) => {
-        console.error(err);
-        alert("Failed to load profile");
-      });
+    axios
+      .get("http://localhost:5001/api/doctors/me")
+      .then((res) => setDoctor(res.data));
   }, []);
 
-  // 🔹 Handle input change
   const handleChange = (e) => {
     setDoctor({ ...doctor, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Submit update
   const handleSubmit = async () => {
-    try {
-      await API.put("/doctors/me", doctor);
+    await axios.put(
+      "http://localhost:5001/api/doctors/me",
+      doctor
+    );
 
-      alert("✅ Profile updated");
-
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to update profile");
-    }
+    alert("Profile updated");
   };
 
-  // 🔹 Prevent crash
-  if (!doctor) {
-    return <p className="p-6">Loading profile...</p>;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow">
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Edit Profile</h1>
 
-        <h1 className="text-xl font-bold mb-4">Edit Profile</h1>
+      <input
+        name="name"
+        value={doctor.name || ""}
+        onChange={handleChange}
+        className="border p-2 mt-2 w-full"
+        placeholder="Name"
+      />
 
-        <input
-          name="name"
-          value={doctor.name || ""}
-          onChange={handleChange}
-          placeholder="Name"
-          className="w-full border p-2 mb-3 rounded"
-        />
+      <input
+        name="specialty"
+        value={doctor.specialty || ""}
+        onChange={handleChange}
+        className="border p-2 mt-2 w-full"
+        placeholder="Specialty"
+      />
 
-        <input
-          name="specialty"
-          value={doctor.specialty || ""}
-          onChange={handleChange}
-          placeholder="Specialty"
-          className="w-full border p-2 mb-3 rounded"
-        />
+      <input
+        name="consultationFee"
+        value={doctor.consultationFee || ""}
+        onChange={handleChange}
+        className="border p-2 mt-2 w-full"
+        placeholder="Fee"
+      />
 
-        <input
-          name="hospital"
-          value={doctor.hospital || ""}
-          onChange={handleChange}
-          placeholder="Hospital"
-          className="w-full border p-2 mb-3 rounded"
-        />
-
-        <input
-          name="experience"
-          value={doctor.experience || ""}
-          onChange={handleChange}
-          placeholder="Experience"
-          className="w-full border p-2 mb-3 rounded"
-        />
-
-        <input
-          name="consultationFee"
-          value={doctor.consultationFee || ""}
-          onChange={handleChange}
-          placeholder="Consultation Fee"
-          className="w-full border p-2 mb-3 rounded"
-        />
-
-        <textarea
-          name="bio"
-          value={doctor.bio || ""}
-          onChange={handleChange}
-          placeholder="Bio"
-          className="w-full border p-2 mb-3 rounded"
-        />
-
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-        >
-          Save Changes
-        </button>
-
-      </div>
+      <button
+        onClick={handleSubmit}
+        className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
+      >
+        Save
+      </button>
     </div>
   );
 }
