@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import API from "../services/api";
 
 function ManageAvailability() {
   const [doctor, setDoctor] = useState(null);
@@ -12,21 +11,20 @@ function ManageAvailability() {
   slotDuration: 30,
 });
 
-useEffect(() => {
-  API.get("/doctors/me")
-    .then((res) => setDoctor(res.data))
-    .catch((err) => {
-      console.error(err);
-      alert("Failed to load doctor data");
-    });
-}, []);
+  useEffect(() => {
+    axios
+      .get("http://localhost:5001/api/doctors/me")
+      .then((res) => setDoctor(res.data));
+  }, []);
 
-// ➕ Add new day
-const addNewDay = async () => {
+  const addNewDay = async () => {
   try {
-    await API.post("/doctors/availability", {
-      ...newDay,
-    });
+    await axios.post(
+      "http://localhost:5001/api/doctors/availability",
+      {
+        ...newDay,
+      }
+    );
 
     alert("New availability added!");
 
@@ -37,34 +35,26 @@ const addNewDay = async () => {
   }
 };
 
-// ❌ Delete day
-const deleteDay = async (date) => {
-  try {
-    await API.delete("/doctors/availability", {
-      data: { date }, // ❗ no need doctorId anymore
+  const deleteDay = async (date) => {
+    await axios.delete("http://localhost:5001/api/doctors/availability", {
+      data: { doctorId: doctor._id, date },
     });
 
     window.location.reload();
-  } catch (err) {
-    console.error(err);
-    alert("Error deleting day");
-  }
-};
+  };
 
-// ✏️ Update day
-const updateDay = async (date) => {
-  try {
-    await API.patch("/doctors/availability/update", {
-      date,
-      ...editData,
-    });
+  const updateDay = async (date) => {
+    await axios.patch(
+      "http://localhost:5001/api/doctors/availability/update",
+      {
+        doctorId: doctor._id,
+        date,
+        ...editData,
+      }
+    );
 
     window.location.reload();
-  } catch (err) {
-    console.error(err);
-    alert("Error updating availability");
-  }
-};
+  };
 
   if (!doctor) return <p className="p-6">Loading...</p>;
 

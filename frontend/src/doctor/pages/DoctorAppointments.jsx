@@ -1,80 +1,40 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import API from "../services/api";
 
 function DoctorAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [doctorId, setDoctorId] = useState(null);
 
-  // 🔹 Get logged-in doctor ID (with token)
   useEffect(() => {
-    API.get("/doctors/me")
-      .then((res) => {
-        console.log("Doctor:", res.data);
-        setDoctorId(res.data._id);
-      })
-      .catch((err) => {
-        console.error("Failed to load doctor:", err);
-      });
+    axios
+      .get("http://localhost:5001/api/doctors/me")
+      .then((res) => setDoctorId(res.data._id));
   }, []);
 
-  // 🔹 Fetch appointments for this doctor
   useEffect(() => {
     if (doctorId) {
       axios
         .get(`http://localhost:5002/api/appointments/doctor/${doctorId}`)
-        .then((res) => {
-          console.log("Appointments:", res.data);
-          setAppointments(res.data);
-        })
-        .catch((err) => {
-          console.error("Failed to load appointments:", err);
-        });
+        .then((res) => setAppointments(res.data));
     }
   }, [doctorId]);
 
-  // 🔹 Update status
   const updateStatus = async (id, status) => {
-    try {
-      await axios.patch(
-        `http://localhost:5002/api/appointments/${id}/status`,
-        { status }
-      );
+    await axios.patch(
+      `http://localhost:5002/api/appointments/${id}/status`,
+      { status }
+    );
 
-      // 🔥 Update UI without reload
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a._id === id ? { ...a, status } : a
-        )
-      );
-
-    } catch (err) {
-      console.error(err);
-      alert("Error updating status");
-    }
+    window.location.reload();
   };
 
-  // 🔹 Save prescription
   const savePrescription = async (id, prescription) => {
-    try {
-      await axios.patch(
-        `http://localhost:5002/api/appointments/${id}/prescription`,
-        { prescription }
-      );
-
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a._id === id ? { ...a, prescription } : a
-        )
-      );
-
-    } catch (err) {
-      console.error(err);
-      alert("Error saving prescription");
-    }
+    await axios.patch(
+      `http://localhost:5002/api/appointments/${id}/prescription`,
+      { prescription }
+    );
   };
 
-  // 🔹 Status styling
   const getStatusStyle = (status) => {
     if (status === "approved") return "bg-green-100 text-green-600";
     if (status === "rejected") return "bg-red-100 text-red-600";
