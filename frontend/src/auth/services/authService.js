@@ -6,7 +6,7 @@ import {
   getIdTokenResult
 } from "firebase/auth";
 import axios from "axios";
-import { auth } from "./firebase";
+import { auth } from "../../config/firebase";
 
 const AUTH_API = "http://localhost:5001/api/auth";
 
