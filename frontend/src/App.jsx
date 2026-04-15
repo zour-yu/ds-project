@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { subscribeToAuthChanges, logout } from "./auth/services/authService";
 import Register from "./auth/pages/Register";
 import Login from "./auth/pages/Login";
+import MainLayout from "./layouts/MainLayout";
+import Home from "./pages/Home";
 
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
@@ -38,9 +40,11 @@ const DashboardPlaceholder = ({ title }) => {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
         
         <Route 
           path="/patient/dashboard" 
@@ -70,7 +74,8 @@ function App() {
         />
 
         <Route path="/" element={<Navigate to="/login" />} />
-      </Routes>
+        </Routes>
+      </MainLayout>
     </Router>
   );
 }
