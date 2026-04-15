@@ -12,6 +12,12 @@ const medicalHistorySchema = new mongoose.Schema({
     notes: { type: String }
 }, { _id: false });
 
+const medicalReportSchema = new mongoose.Schema({
+    fileName: { type: String, required: true },
+    fileUrl: { type: String, required: true }, // The Cloudinary link
+    uploadedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const patientSchema = new mongoose.Schema({
     // Primary link to the auth-service Identity (from Firebase)
     firebaseId: { 
@@ -21,6 +27,10 @@ const patientSchema = new mongoose.Schema({
         index: true 
     },
     // Patient specific domain data
+    profileImage: { // The Cloudinary link for the profile picture
+        type: String,
+        default: ''
+    },
     dateOfBirth: { 
         type: Date 
     },
@@ -38,6 +48,7 @@ const patientSchema = new mongoose.Schema({
         type: String 
     }],
     medicalHistory: [medicalHistorySchema],
+    medicalReports: [medicalReportSchema], // Array of uploaded reports
     emergencyContact: emergencyContactSchema
 }, { timestamps: true });
 

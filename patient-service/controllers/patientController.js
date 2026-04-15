@@ -67,6 +67,7 @@ const updatePatientProfile = async (req, res) => {
         if (allergies) patient.allergies = allergies;
         if (medicalHistory) patient.medicalHistory = medicalHistory;
         if (emergencyContact) patient.emergencyContact = emergencyContact;
+        // Note: profileImage and medicalReports are updated via separate dedicated endpoints
         
         await patient.save();
         res.status(200).json(patient);
@@ -76,8 +77,63 @@ const updatePatientProfile = async (req, res) => {
     }
 };
 
+// @route   POST /api/patients/profile/image
+// @desc    Upload or update patient profile image
+// @access  Private (Patient only)
+const uploadPatientImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No image uploaded' });
+        }
+        
+        let patient = await Patient.findOne({ firebaseId: req.user.firebaseId });
+        if (!patient) {
+            return res.status(404).json({ message: 'Patient profile not found. Please create one first.' });
+        }
+
+        patient.profileImage = req.file.path; // The Cloudinary URL
+        await patient.save();
+
+        res.status(200).json({ message: 'Profile image updated', imageUrl: req.file.path });
+    } catch (error) {
+        console.error('Error uploading profile image:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// @route   POST /api/patients/profile/reports
+// @desc    Upload a new medical report
+// @access  Private (Patient only)
+const uploadPatientReport = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No report file uploaded' });
+        }
+        
+        let patient = await Patient.findOne({ firebaseId: req.user.firebaseId });
+        if (!patient) {
+            return res.status(404).json({ message: 'Patient profile not found. Please create one first.' });
+        }
+
+        const newReport = {
+            fileName: req.file.originalname, // Original name from user's computer
+            fileUrl: req.file.path // The Cloudinary URL
+        };
+
+        patient.medicalReports.push(newReport);
+        await patient.save();
+
+        res.status(200).json({ message: 'Medical report uploaded', newReport });
+    } catch (error) {
+        console.error('Error uploading medical report:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 module.exports = { 
     getPatientProfile, 
     createPatientProfile,
-    updatePatientProfile 
+    updatePatientProfile,
+    uploadPatientImage,
+    uploadPatientReport
 };
