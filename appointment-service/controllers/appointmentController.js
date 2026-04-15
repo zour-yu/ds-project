@@ -1,7 +1,10 @@
 const Appointment = require("../models/Appointment");
 const axios = require("axios");
 
-// Create appointment
+const DOCTOR_SERVICE_URL = "http://localhost:5001/api/doctors";
+const NOTIFICATION_SERVICE_URL = "http://localhost:5004/api/notifications";
+
+// ✅ Create appointment
 exports.createAppointment = async (req, res) => {
   try {
     const {
@@ -10,20 +13,24 @@ exports.createAppointment = async (req, res) => {
       time,
       name,
       age,
-      symptoms
+      symptoms,
+      email,   // 👈 add this from frontend
+      phone    // 👈 add this from frontend
     } = req.body;
 
     const report = req.file ? req.file.filename : null;
 
-    await axios.patch("http://localhost:5001/api/doctors/book-slot", {
+    // 🔹 Book doctor slot
+    await axios.patch(`${DOCTOR_SERVICE_URL}/book-slot`, {
       doctorId,
       date,
       time
     });
 
+    // 🔹 Save appointment
     const appointment = new Appointment({
       doctorId,
-      patientId: "patient123",
+      patientId: "patient123", // later replace with auth user
       date,
       time,
       name,
@@ -34,14 +41,29 @@ exports.createAppointment = async (req, res) => {
 
     await appointment.save();
 
+    // 🔹 Send notification (async - don't break main flow)
+    try {
+      await axios.post(`${NOTIFICATION_SERVICE_URL}/appointment-created`, {
+        email,
+        phone,
+        name,
+        doctorId,
+        date,
+        time
+      });
+    } catch (notifyErr) {
+      console.error("Notification error:", notifyErr.message);
+    }
+
     res.json(appointment);
 
-  }  catch (err) {
-  console.error("ERROR:", err); // 👈 IMPORTANT
-  res.status(500).json({ error: err.message });
-}
+  } catch (err) {
+    console.error("ERROR:", err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 
+// ✅ Get doctor appointments
 exports.getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
@@ -55,11 +77,11 @@ exports.getDoctorAppointments = async (req, res) => {
   }
 };
 
-
+// ✅ Update appointment status
 exports.updateStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, email, phone } = req.body;
 
     const appointment = await Appointment.findById(id);
 
@@ -67,9 +89,9 @@ exports.updateStatus = async (req, res) => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    // 🔥 If cancelling → free slot
+    // 🔥 If rejected → free slot
     if (status === "rejected") {
-      await axios.patch("http://localhost:5001/api/doctors/free-slot", {
+      await axios.patch(`${DOCTOR_SERVICE_URL}/free-slot`, {
         doctorId: appointment.doctorId,
         date: appointment.date,
         time: appointment.time
@@ -79,6 +101,18 @@ exports.updateStatus = async (req, res) => {
     appointment.status = status;
     await appointment.save();
 
+    // 🔹 Send notification
+    try {
+      await axios.post(`${NOTIFICATION_SERVICE_URL}/appointment-status`, {
+        email,
+        phone,
+        name: appointment.name,
+        status
+      });
+    } catch (notifyErr) {
+      console.error("Notification error:", notifyErr.message);
+    }
+
     res.json(appointment);
 
   } catch (err) {
@@ -86,15 +120,36 @@ exports.updateStatus = async (req, res) => {
   }
 };
 
+// ✅ Add prescription
 exports.addPrescription = async (req, res) => {
-  const { id } = req.params;
-  const { prescription } = req.body;
+  try {
+    const { id } = req.params;
+    const { prescription, email, phone } = req.body;
 
-  const appt = await Appointment.findByIdAndUpdate(
-    id,
-    { prescription },
-    { new: true }
-  );
+    const appt = await Appointment.findByIdAndUpdate(
+      id,
+      { prescription },
+      { new: true }
+    );
 
-  res.json(appt);
+    if (!appt) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // 🔹 Send notification
+    try {
+      await axios.post(`${NOTIFICATION_SERVICE_URL}/prescription`, {
+        email,
+        phone,
+        name: appt.name
+      });
+    } catch (notifyErr) {
+      console.error("Notification error:", notifyErr.message);
+    }
+
+    res.json(appt);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
