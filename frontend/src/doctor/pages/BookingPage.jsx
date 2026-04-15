@@ -15,54 +15,111 @@ export default function BookingPage() {
   const [file, setFile] = useState(null);
 
   const handleSubmit = async () => {
-    const data = new FormData();
+    try {
+      const data = new FormData();
 
-    data.append("doctorId", id);
-    data.append("date", state.date);
-    data.append("time", state.time);
-    data.append("name", form.name);
-    data.append("age", form.age);
-    data.append("symptoms", form.symptoms);
+      data.append("doctorId", id);
+      data.append("date", state.date);
+      data.append("time", state.time);
+      data.append("name", form.name);
+      data.append("age", form.age);
+      data.append("symptoms", form.symptoms);
 
-    if (file) data.append("file", file);
+      if (file) data.append("file", file);
 
-    await API.post(`${import.meta.env.VITE_APPOINTMENT_API}/appointments`, data);
+      await API.post(
+        `${import.meta.env.VITE_APPOINTMENT_API}/appointments`,
+        data
+      );
 
-    alert("Appointment booked!");
+      alert("Appointment booked successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Booking failed");
+    }
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">
-        Booking for {state.date} at {state.time}
-      </h2>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
 
-      <input placeholder="Name"
-        className="block border p-2 my-2"
-        onChange={e => setForm({...form, name: e.target.value})}
-      />
+      <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6">
 
-      <input placeholder="Age"
-        className="block border p-2 my-2"
-        onChange={e => setForm({...form, age: e.target.value})}
-      />
+        {/* HEADER */}
+        <h2 className="text-2xl font-bold text-center mb-4">
+          Book Appointment
+        </h2>
 
-      <textarea placeholder="Symptoms"
-        className="block border p-2 my-2"
-        onChange={e => setForm({...form, symptoms: e.target.value})}
-      />
+        {/* SLOT INFO */}
+        <div className="bg-blue-50 p-4 rounded-lg text-center mb-6">
+          <p className="text-gray-700">
+            📅 <b>{state?.date}</b>
+          </p>
+          <p className="text-gray-700">
+            ⏰ <b>{state?.time}</b>
+          </p>
+        </div>
 
-      <input type="file"
-        className="my-2"
-        onChange={e => setFile(e.target.files[0])}
-      />
+        {/* FORM */}
+        <div className="space-y-4">
 
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-500 text-white px-4 py-2"
-      >
-        Book Appointment
-      </button>
+          {/* Name */}
+          <div>
+            <label className="text-sm text-gray-600">Full Name</label>
+            <input
+              type="text"
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Enter your name"
+              onChange={e => setForm({...form, name: e.target.value})}
+            />
+          </div>
+
+          {/* Age */}
+          <div>
+            <label className="text-sm text-gray-600">Age</label>
+            <input
+              type="number"
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Enter your age"
+              onChange={e => setForm({...form, age: e.target.value})}
+            />
+          </div>
+
+          {/* Symptoms */}
+          <div>
+            <label className="text-sm text-gray-600">Symptoms</label>
+            <textarea
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Describe your symptoms..."
+              rows={3}
+              onChange={e => setForm({...form, symptoms: e.target.value})}
+            />
+          </div>
+
+          {/* File Upload */}
+          <div>
+            <label className="text-sm text-gray-600">
+              Upload Medical Report (optional)
+            </label>
+
+            <input
+              type="file"
+              className="w-full mt-1"
+              onChange={e => setFile(e.target.files[0])}
+            />
+          </div>
+
+        </div>
+
+        {/* BUTTON */}
+        <button
+          onClick={handleSubmit}
+          className="w-full mt-6 bg-blue-500 text-white py-3 rounded-lg 
+                     hover:bg-blue-600 transition font-semibold"
+        >
+          Confirm Booking
+        </button>
+
+      </div>
     </div>
   );
 }
