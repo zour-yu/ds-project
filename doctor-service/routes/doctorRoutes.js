@@ -1,15 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/doctorController");
+const { verifyToken } = require("../middleware/authMiddleware");
 
-router.post("/", controller.createDoctor);
+
 router.get("/", controller.getDoctors);
 
 // NEW
-router.get("/me", controller.getMyProfile);
-router.put("/me", controller.updateProfile);
+router.get("/me", verifyToken, controller.getMyProfile);
+router.put("/me", verifyToken, controller.updateProfile);
+router.post("/profile", verifyToken, controller.createDoctorProfile);
 
-router.post("/availability", controller.addAvailability);
+router.post("/availability", verifyToken, controller.addAvailability);
+
 
 router.get("/:id/availability", controller.getDoctorAvailability);
 router.get("/:id", controller.getDoctorById);
@@ -17,7 +20,7 @@ router.get("/:id", controller.getDoctorById);
 router.patch("/book-slot", controller.bookSlot);
 router.patch("/free-slot", controller.freeSlot);
 
-router.delete("/availability", controller.deleteAvailability);
-router.patch("/availability/update", controller.updateAvailability);
+router.delete("/availability", verifyToken, controller.deleteAvailability);
+router.patch("/availability/update", verifyToken, controller.updateAvailability);
 
 module.exports = router;
