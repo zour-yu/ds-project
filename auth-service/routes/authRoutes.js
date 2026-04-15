@@ -4,7 +4,7 @@ const { registerUser, getUserProfile, updateUserProfile } = require('../controll
 const { verifyToken } = require('../middleware/authMiddleware');
 
 // POST /api/auth/register
-// This route is protected. It requires a valid Firebase ID token in the headers.
+// User already registered via frontend, so we just save them in MongoDB + add claims
 router.post('/register', verifyToken, registerUser);
 
 // GET /api/auth/me

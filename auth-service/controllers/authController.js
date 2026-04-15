@@ -1,51 +1,35 @@
 const User = require('../models/User');
 const admin = require('../config/firebase');
 
-// @desc    Register a new user in MongoDB and set Firebase Custom Claims
+// @desc    Register a new user (Creates in MongoDB + Custom Claims)
 // @route   POST /api/auth/register
-// @access  Private (Requires Firebase Token)
+// @access  Private (Frontend calls this AFTER Firebase registration)
 const registerUser = async (req, res) => {
   try {
-    // uid and email come from the verified Firebase token (via authMiddleware)
-    const { uid: firebaseId, email } = req.user; 
-    const { name, role, phoneNumber, address } = req.body;
+    const { email, name, role, phoneNumber, address } = req.body;
+    const firebaseId = req.user.uid;
 
-    // 1. Validate the role
-    const validRoles = ['patient', 'doctor', 'admin'];
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({ message: 'Invalid role provided.' });
-    }
-
-    // 2. Check if the user already exists in our MongoDB
-    let user = await User.findOne({ firebaseId });
-    if (user) {
-      return res.status(400).json({ message: 'User already registered in the system.', user });
-    }
-
-    // 3. Save the new user into MongoDB
-    user = new User({
+    const user = new User({
       firebaseId,
       email,
       name,
-      role,
+      role: role || 'patient',
       phoneNumber,
       address
     });
     await user.save();
 
-    // 4. Set Custom Claims in Firebase (Option A - Embed the role in the token)
-    await admin.auth().setCustomUserClaims(firebaseId, { role: role });
+    // 2. Add Custom Claims for RBAC
+    await admin.auth().setCustomUserClaims(firebaseId, { role: role || 'patient' });
 
-    // Note: Once custom claims are set, the frontend needs to force a token refresh 
-    // to get the new claims inside their token payload.
     res.status(201).json({
-      message: 'User registered successfully and Firebase claims updated.',
+      message: 'User registered in MongoDB with custom claims.',
       user
     });
 
   } catch (error) {
     console.error('Error in registerUser:', error);
-    res.status(500).json({ message: 'Server Configuration Error', error: error.message });
+    res.status(500).json({ message: 'Registration Error', error: error.message });
   }
 };
 
