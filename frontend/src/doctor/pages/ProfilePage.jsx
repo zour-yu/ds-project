@@ -29,141 +29,173 @@ export default function ProfilePage() {
   }, []);
 
   const handleSubmit = async () => {
-  try {
-    const payload = {
-      ...form,
-      qualifications: form.qualifications
-        ? form.qualifications.split(",").map(q => q.trim())
-        : [],
-      experience: Number(form.experience),
-      consultationFee: Number(form.consultationFee)
-    };
+    try {
+      const payload = {
+        ...form,
+        qualifications: form.qualifications
+          ? form.qualifications.split(",").map(q => q.trim())
+          : [],
+        experience: Number(form.experience),
+        consultationFee: Number(form.consultationFee)
+      };
 
-    if (doctor) {
-      await API.put("/doctors/me", payload);
-      alert("Updated");
-    } else {
-      await API.post("/doctors/profile", payload);
-      alert("Created");
+      if (doctor) {
+        await API.put("/doctors/me", payload);
+        alert("Profile updated!");
+      } else {
+        await API.post("/doctors/profile", payload);
+        alert("Profile created!");
+      }
+
+      setEditMode(false);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
     }
-
-    setEditMode(false);
-    window.location.reload();
-
-  } catch (err) {
-    console.error("ERROR:", err.response?.data || err.message);
-    alert("Something went wrong");
-  }
-};
-
-  const Input = ({ label, value, onChange }) => (
-    <div className="mb-3">
-      <label className="block text-gray-600 text-sm">{label}</label>
-      <input
-        className="w-full border p-2 rounded"
-        value={value}
-        onChange={onChange}
-      />
-    </div>
-  );
+  };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
-      <h2 className="text-2xl font-bold mb-4">Doctor Profile</h2>
+    <div className="min-h-screen bg-gray-100 p-6">
 
-      {!editMode ? (
-        <>
-          <p><b>Name:</b> {doctor?.name}</p>
-          <p><b>Specialty:</b> {doctor?.specialty}</p>
-          <p><b>Qualifications:</b> {doctor?.qualifications?.join(", ")}</p>
-          <p><b>Experience:</b> {doctor?.experience} years</p>
-          <p><b>Hospital:</b> {doctor?.hospital}</p>
-          <p><b>Fee:</b> Rs. {doctor?.consultationFee}</p>
-          <p className="mt-2 text-gray-600">{doctor?.bio}</p>
+      <div className="max-w-4xl mx-auto">
 
-          <button
-            onClick={() => setEditMode(true)}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Edit Profile
-          </button>
-        </>
-      ) : (
-        <>
-          {/* EDIT MODE */}
-<>
-  <div className="mb-3">
-    <label>Name</label>
-    <input
-      className="w-full border p-2 rounded"
-      value={form.name || ""}
-      onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-    />
-  </div>
+        {/* 🔹 PROFILE HEADER */}
+        <div className="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
+          
+          <img
+            src="https://img.freepik.com/premium-vector/user-profile-icon-circle_1256048-12499.jpg?semt=ais_hybrid&w=740&q=80"
+            className="w-28 h-28 rounded-full border-4 border-blue-100"
+          />
 
-  <div className="mb-3">
-    <label>Specialty</label>
-    <input
-      className="w-full border p-2 rounded"
-      value={form.specialty || ""}
-      onChange={e => setForm(prev => ({ ...prev, specialty: e.target.value }))}
-    />
-  </div>
+          <div className="text-center md:text-left flex-1">
+            <h2 className="text-2xl font-bold">{doctor?.name}</h2>
+            <p className="text-blue-500">{doctor?.specialty}</p>
 
-  <div className="mb-3">
-    <label>Qualifications</label>
-    <input
-      className="w-full border p-2 rounded"
-      value={form.qualifications || ""}
-      onChange={e => setForm(prev => ({ ...prev, qualifications: e.target.value }))}
-    />
-  </div>
+            <p className="text-gray-600 mt-2">
+              {doctor?.qualifications?.join(", ")}
+            </p>
 
-  <div className="mb-3">
-    <label>Experience</label>
-    <input
-      className="w-full border p-2 rounded"
-      value={form.experience || ""}
-      onChange={e => setForm(prev => ({ ...prev, experience: e.target.value }))}
-    />
-  </div>
+            <div className="flex flex-wrap gap-3 mt-3 justify-center md:justify-start">
+              <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                🏥 {doctor?.hospital}
+              </span>
 
-  <div className="mb-3">
-    <label>Hospital</label>
-    <input
-      className="w-full border p-2 rounded"
-      value={form.hospital || ""}
-      onChange={e => setForm(prev => ({ ...prev, hospital: e.target.value }))}
-    />
-  </div>
+              <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                ⏳ {doctor?.experience} yrs exp
+              </span>
 
-  <div className="mb-3">
-    <label>Consultation Fee</label>
-    <input
-      className="w-full border p-2 rounded"
-      value={form.consultationFee || ""}
-      onChange={e => setForm(prev => ({ ...prev, consultationFee: e.target.value }))}
-    />
-  </div>
+              <span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-semibold">
+                💰 Rs. {doctor?.consultationFee}
+              </span>
+            </div>
+          </div>
+        </div>
 
-  <div className="mb-3">
-    <label>Bio</label>
-    <textarea
-      className="w-full border p-2 rounded"
-      value={form.bio || ""}
-      onChange={e => setForm(prev => ({ ...prev, bio: e.target.value }))}
-    />
-  </div>
+        {/* 🔹 DETAILS SECTION */}
+        <div className="bg-white rounded-2xl shadow p-6 mt-6">
 
-  <button
-    onClick={handleSubmit}
-    className="bg-green-500 text-white px-4 py-2 rounded"
-  >
-    Save Changes
-  </button>
-</>
-        </>
-      )}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold">Profile Details</h3>
+
+            {!editMode && (
+              <button
+                onClick={() => setEditMode(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+
+          {!editMode ? (
+            <>
+              <p className="mb-2"><b>Hospital:</b> {doctor?.hospital}</p>
+              <p className="mb-2"><b>Experience:</b> {doctor?.experience} years</p>
+              <p className="mb-2"><b>Consultation Fee:</b> Rs. {doctor?.consultationFee}</p>
+
+              <div className="mt-4">
+                <p className="font-semibold">Bio</p>
+                <p className="text-gray-600">{doctor?.bio || "No bio added"}</p>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <input
+                placeholder="Name"
+                className="border p-3 rounded-lg"
+                value={form.name || ""}
+                onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+              />
+
+              <input
+                placeholder="Specialty"
+                className="border p-3 rounded-lg"
+                value={form.specialty || ""}
+                onChange={e => setForm(prev => ({ ...prev, specialty: e.target.value }))}
+              />
+
+              <input
+                placeholder="Qualifications (comma separated)"
+                className="border p-3 rounded-lg"
+                value={form.qualifications || ""}
+                onChange={e => setForm(prev => ({ ...prev, qualifications: e.target.value }))}
+              />
+
+              <input
+                type="number"
+                placeholder="Experience"
+                className="border p-3 rounded-lg"
+                value={form.experience || ""}
+                onChange={e => setForm(prev => ({ ...prev, experience: e.target.value }))}
+              />
+
+              <input
+                placeholder="Hospital"
+                className="border p-3 rounded-lg"
+                value={form.hospital || ""}
+                onChange={e => setForm(prev => ({ ...prev, hospital: e.target.value }))}
+              />
+
+              <input
+                type="number"
+                placeholder="Consultation Fee"
+                className="border p-3 rounded-lg"
+                value={form.consultationFee || ""}
+                onChange={e => setForm(prev => ({ ...prev, consultationFee: e.target.value }))}
+              />
+
+              <textarea
+                placeholder="Bio"
+                className="border p-3 rounded-lg md:col-span-2"
+                rows={3}
+                value={form.bio || ""}
+                onChange={e => setForm(prev => ({ ...prev, bio: e.target.value }))}
+              />
+
+              <div className="md:col-span-2 flex gap-3 mt-2">
+                <button
+                  onClick={handleSubmit}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Save Changes
+                </button>
+
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="bg-gray-300 px-4 py-2 rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+      </div>
     </div>
   );
 }
