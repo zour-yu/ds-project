@@ -10,6 +10,10 @@ import PatientProfile from "./patient/pages/PatientProfile";
 import PatientDashboard from "./patient/pages/PatientDashboard";
 import MedicalRecords from "./patient/pages/MedicalRecords";
 import Prescriptions from "./patient/pages/Prescriptions";
+import DoctorDashboard from "./doctor/pages/DoctorDashboard";
+import ProfilePage from "./doctor/pages/ProfilePage";
+import AvailabilityPage from "./doctor/pages/AvailabilityPage";
+import DoctorAppointments from "./doctor/pages/DoctorAppointments";
 
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
@@ -63,9 +67,17 @@ function App() {
               <PatientManagementLayout>
                 <PatientProfile />
               </PatientManagementLayout>
+          path="/doctor/*" 
+          element={
+            <PrivateRoute allowedRole="doctor">
+              <DoctorDashboard />
             </PrivateRoute>
-          } 
-        />
+          }
+        >
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="availability" element={<AvailabilityPage />} />
+          <Route path="appointments" element={<DoctorAppointments />} />
+        </Route>
 
         <Route 
           path="/patient/records" 
