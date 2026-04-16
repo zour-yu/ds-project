@@ -22,9 +22,14 @@ const imageStorage = new CloudinaryStorage({
 // Storage Engine for Medical Reports (allows documents and images)
 const reportStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: 'patient/medical-reports', // Adding the 'patient' prefix to the folder
-        resource_type: 'auto' // Crucial for uploading PDFs and raw documents
+    params: async (req, file) => {
+        return {
+            folder: 'patient/medical-reports',
+            // Switching to 'image' format for PDFs allows Cloudinary to generate 
+            // a viewable image/preview which bypasses the PDF security block
+            resource_type: 'image', 
+            format: 'jpg' 
+        };
     }
 });
 

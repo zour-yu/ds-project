@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const emergencyContactSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    phone: { type: String, required: true },
-    relationship: { type: String, required: true }
+    name: { type: String },
+    phone: { type: String },
+    relationship: { type: String }
 }, { _id: false });
 
 const medicalHistorySchema = new mongoose.Schema({
-    condition: { type: String, required: true },
+    condition: { type: String },
     diagnosedDate: { type: Date },
     notes: { type: String }
 }, { _id: false });
@@ -16,7 +16,7 @@ const medicalReportSchema = new mongoose.Schema({
     fileName: { type: String, required: true },
     fileUrl: { type: String, required: true }, // The Cloudinary link
     uploadedAt: { type: Date, default: Date.now }
-}, { _id: false });
+}); // Removed { _id: false } so we can delete by ID
 
 const patientSchema = new mongoose.Schema({
     // Primary link to the auth-service Identity (from Firebase)
