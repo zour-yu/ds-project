@@ -19,7 +19,7 @@ const UserNavigation = () => {
       if (data?.user) {
         try {
           const token = await data.user.getIdToken();
-          const response = await axios.get(`http://localhost:5002/api/patients/profile`, {
+          const response = await axios.get(`${import.meta.env.VITE_PATIENT_API}/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data) {

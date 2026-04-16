@@ -26,7 +26,7 @@ const MedicalRecords = () => {
 
   const fetchRecords = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/patients/profile`, {
+      const response = await axios.get(`${import.meta.env.VITE_PATIENT_API}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data && response.data.medicalReports) {
@@ -55,7 +55,7 @@ const MedicalRecords = () => {
 
     try {
       const token = await user.getIdToken();
-      const response = await axios.post(`http://localhost:5002/api/patients/profile/reports`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_PATIENT_API}/profile/reports`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data' 
@@ -77,7 +77,7 @@ const MedicalRecords = () => {
       const token = await user.getIdToken();
       // Ensure the identifier (ID or URL) is safely encoded for the API route
       const safeId = encodeURIComponent(identifier);
-      const response = await axios.delete(`http://localhost:5002/api/patients/profile/reports/${safeId}`, {
+      const response = await axios.delete(`${import.meta.env.VITE_PATIENT_API}/profile/reports/${safeId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(response.data.medicalReports || []);

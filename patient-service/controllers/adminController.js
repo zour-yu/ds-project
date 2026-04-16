@@ -1,13 +1,47 @@
 const Patient = require('../models/Patient');
+const mongoose = require('mongoose');
+
+// Define a connection to the Auth Database to fetch User identities
+const authDbConnection = mongoose.createConnection(process.env.AUTH_MONGO_URI || 'mongodb+srv://DSProjectUser:74vsL5aj3DjF-jK@dscluster0.tiv8ucx.mongodb.net/auth_db?retryWrites=true&w=majority&appName=DsCluster0');
+
+// Define the User model on the Auth DB connection
+const User = authDbConnection.model('User', new mongoose.Schema({
+    firebaseId: String,
+    email: String,
+    name: String,
+    role: String,
+    phoneNumber: String,
+    address: String
+}));
 
 // @route   GET /api/patients/admin/all
 // @desc    Get all patients' medical profiles (Admin only)
 // @access  Private (Admin only)
 const getAllPatientProfiles = async (req, res) => {
     try {
-        // Find all patient medical profiles
-        const patients = await Patient.find();
-        res.status(200).json(patients);
+        console.log("Admin requesting all patient profiles...");
+        // 1. Get all users who have the role 'patient'
+        const users = await User.find({ role: 'patient' });
+        console.log(`Found ${users.length} patient users from Auth DB`);
+        
+        // 2. Map through users and find their corresponding medical profile if it exists
+        const patientsWithUserInfo = await Promise.all(users.map(async (user) => {
+            const medicalProfile = await Patient.findOne({ firebaseId: user.firebaseId });
+            console.log(`User ${user.email} medical profile: ${medicalProfile ? 'Found' : 'Missing'}`);
+            
+            return {
+                ...(medicalProfile ? medicalProfile.toObject() : {}),
+                firebaseId: user.firebaseId,
+                name: user.name,
+                email: user.email,
+                phone: user.phoneNumber || 'No phone',
+                address: user.address || 'No address',
+                status: 'Active' // You can add logic for this later
+            };
+        }));
+
+        console.log(`Returning ${patientsWithUserInfo.length} profiles to Admin`);
+        res.status(200).json(patientsWithUserInfo);
     } catch (error) {
         console.error("Error fetching all patient profiles:", error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -32,7 +66,28 @@ const getPatientProfileById = async (req, res) => {
     }
 };
 
+// @route   DELETE /api/patients/admin/:firebaseId
+// @desc    Delete a patient's medical profile (Admin only)
+// @access  Private (Admin only)
+const deletePatientProfile = async (req, res) => {
+    try {
+        const { firebaseId } = req.params;
+        
+        // Delete medical profile from patient-service
+        await Patient.findOneAndDelete({ firebaseId });
+        
+        // Optional: If you wanted to delete from Auth DB as well, you would use:
+        // await User.findOneAndDelete({ firebaseId });
+        
+        res.status(200).json({ message: 'Patient medical profile deleted successfully.' });
+    } catch (error) {
+        console.error("Error deleting patient profile:", error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     getAllPatientProfiles,
-    getPatientProfileById
+    getPatientProfileById,
+    deletePatientProfile
 };

@@ -15,6 +15,11 @@ import ProfilePage from "./doctor/pages/ProfilePage";
 import AvailabilityPage from "./doctor/pages/AvailabilityPage";
 import DoctorAppointments from "./doctor/pages/DoctorAppointments";
 
+import AdminManagementLayout from "./layouts/AdminManagementLayout";
+import AdminDashboard from "./admin/pages/AdminDashboard";
+import VerifyDoctors from "./admin/pages/VerifyDoctors";
+import AdminPatients from "./admin/pages/AdminPatients";
+
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
 
@@ -67,6 +72,11 @@ function App() {
               <PatientManagementLayout>
                 <PatientProfile />
               </PatientManagementLayout>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
           path="/doctor/*" 
           element={
             <PrivateRoute allowedRole="doctor">
@@ -106,6 +116,39 @@ function App() {
           element={
             <PrivateRoute allowedRole="doctor">
               <div className="p-8">Doctor Dashboard (Coming Soon)</div>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminDashboard />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/verify-doctors" 
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <VerifyDoctors />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/patients" 
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminPatients />
+              </AdminManagementLayout>
             </PrivateRoute>
           } 
         />

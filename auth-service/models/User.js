@@ -26,6 +26,14 @@ const userSchema = new mongoose.Schema({
   },
   address: {
     type: String
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: function() {
+      // Patients and Admins are approved by default
+      return this.role === 'doctor' ? 'pending' : 'approved';
+    }
   }
 }, {
   timestamps: true

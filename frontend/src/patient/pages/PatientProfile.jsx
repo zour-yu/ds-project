@@ -51,26 +51,59 @@ const PatientProfile = () => {
 
   const fetchProfile = async (uid, token) => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/patients/profile`, {
+      console.log("Fetching profile for UID:", uid);
+      // 1. Fetch Medical info
+      const resMedical = await axios.get(`${import.meta.env.VITE_PATIENT_API}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.data) {
-        setProfile(prev => {
-          const fetchedProfile = {
-            ...prev,
-            ...response.data,
-            name: response.data.name || prev.name,
-            email: response.data.email || prev.email,
-            emergencyContact: response.data.emergencyContact || { name: '', relationship: '', phone: '' },
-            allergies: response.data.allergies || [],
-            medicalHistory: response.data.medicalHistory || []
-          };
-          setOriginalProfile(fetchedProfile);
-          return fetchedProfile;
-        });
-      }
+      
+      // 2. Fetch Basic info
+      const resAuth = await axios.get(`${import.meta.env.VITE_AUTH_API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log("Profile API Raw Data:", { medical: resMedical.data, auth: resAuth.data });
+
+      setProfile(prev => {
+        const medicalData = resMedical.data || {};
+        const authData = resAuth.data || {};
+        
+        const fetchedProfile = {
+          ...prev,
+          ...medicalData,
+          name: authData.name || medicalData.name || prev.name,
+          email: authData.email || medicalData.email || prev.email,
+          phone: authData.phoneNumber || authData.phone || medicalData.phone || prev.phone || '',
+          address: authData.address || medicalData.address || prev.address || '',
+          dateOfBirth: medicalData.dateOfBirth ? medicalData.dateOfBirth.split('T')[0] : prev.dateOfBirth,
+          emergencyContact: medicalData.emergencyContact || { name: '', relationship: '', phone: '' },
+          allergies: medicalData.allergies || [],
+          medicalHistory: medicalData.medicalHistory || []
+        };
+        
+        console.log("Final Merged Profile State:", fetchedProfile);
+        setOriginalProfile(fetchedProfile);
+        return fetchedProfile;
+      });
     } catch (error) {
       console.error("Error fetching profile:", error);
+      // If medical profile is 404, still load the auth data if possible
+      if (error.response?.status === 404) {
+        try {
+          const resAuth = await axios.get(`${import.meta.env.VITE_AUTH_API}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setProfile(prev => ({
+            ...prev,
+            name: resAuth.data.name || prev.name,
+            email: resAuth.data.email || prev.email,
+            phone: resAuth.data.phoneNumber || resAuth.data.phone || prev.phone,
+            address: resAuth.data.address || prev.address
+          }));
+        } catch (authErr) {
+          console.error("Error fetching auth data:", authErr);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -98,7 +131,16 @@ const PatientProfile = () => {
 
       console.log("Sending payload:", payload);
 
-      const response = await axios.put(`http://localhost:5002/api/patients/profile`, payload, {
+      const response = await axios.put(`${import.meta.env.VITE_PATIENT_API}/profile`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Update Basic Info (Name, Phone, Address) in auth-service
+      await axios.put(`${import.meta.env.VITE_AUTH_API}/auth/profile`, {
+        name: profile.name,
+        phoneNumber: profile.phone,
+        address: profile.address
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -129,7 +171,7 @@ const PatientProfile = () => {
         emergencyContact: profile.emergencyContact
       };
       
-      const response = await axios.post(`http://localhost:5002/api/patients/profile/create`, payload, {
+      const response = await axios.post(`${import.meta.env.VITE_PATIENT_API}/profile/create`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -184,7 +226,7 @@ const PatientProfile = () => {
 
     try {
       const token = await user.getIdToken();
-      const response = await axios.post(`http://localhost:5002/api/patients/profile/image`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_PATIENT_API}/profile/image`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -278,7 +320,7 @@ const PatientProfile = () => {
                   <input 
                     type="text" disabled={!isEditing}
                     className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 focus:border-teal-500 focus:bg-white outline-none disabled:opacity-75 transition-all font-semibold text-slate-700"
-                    value={profile.name} onChange={(e) => setProfile({...profile, name: e.target.value})}
+                    value={profile.name || ''} onChange={(e) => setProfile({...profile, name: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
@@ -286,7 +328,7 @@ const PatientProfile = () => {
                   <select 
                     disabled={!isEditing}
                     className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 focus:border-teal-500 focus:bg-white outline-none disabled:opacity-75 transition-all font-semibold text-slate-700 appearance-none cursor-pointer"
-                    value={profile.gender} onChange={(e) => setProfile({...profile, gender: e.target.value})}
+                    value={profile.gender || 'Prefer Not To Say'} onChange={(e) => setProfile({...profile, gender: e.target.value})}
                   >
                     {['Male', 'Female', 'Other', 'Prefer Not To Say'].map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
@@ -296,7 +338,7 @@ const PatientProfile = () => {
                   <input 
                     type="date" disabled={!isEditing}
                     className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 focus:border-teal-500 focus:bg-white outline-none disabled:opacity-75 transition-all font-semibold text-slate-700"
-                    value={profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : ''} 
+                    value={profile.dateOfBirth ? (profile.dateOfBirth.includes('T') ? profile.dateOfBirth.split('T')[0] : profile.dateOfBirth) : ''} 
                     onChange={(e) => setProfile({...profile, dateOfBirth: e.target.value})}
                   />
                 </div>
@@ -305,7 +347,7 @@ const PatientProfile = () => {
                   <input 
                     type="text" disabled={!isEditing}
                     className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 focus:border-teal-500 focus:bg-white outline-none disabled:opacity-75 transition-all font-semibold text-slate-700"
-                    value={profile.phone} onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                    value={profile.phone || ''} onChange={(e) => setProfile({...profile, phone: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -313,7 +355,7 @@ const PatientProfile = () => {
                   <textarea 
                     rows="2" disabled={!isEditing}
                     className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 focus:border-teal-500 focus:bg-white outline-none disabled:opacity-75 transition-all font-semibold text-slate-700 resize-none"
-                    value={profile.address} onChange={(e) => setProfile({...profile, address: e.target.value})}
+                    value={profile.address || ''} onChange={(e) => setProfile({...profile, address: e.target.value})}
                   />
                 </div>
               </div>
@@ -376,7 +418,7 @@ const PatientProfile = () => {
                   <select 
                     disabled={!isEditing}
                     className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 focus:border-teal-500 focus:bg-white outline-none disabled:opacity-75 transition-all font-semibold text-slate-700 appearance-none cursor-pointer"
-                    value={profile.bloodGroup} onChange={(e) => setProfile({...profile, bloodGroup: e.target.value})}
+                    value={profile.bloodGroup || ''} onChange={(e) => setProfile({...profile, bloodGroup: e.target.value})}
                   >
                     <option value="">N/A</option>
                     {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => <option key={group} value={group}>{group}</option>)}
