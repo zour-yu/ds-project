@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { subscribeToAuthChanges, logout } from '../../auth/services/authService';
 import { ChevronDown, User, LayoutDashboard, Calendar, FileText, Pill, LogOut, Bell } from 'lucide-react';
 
@@ -14,7 +14,7 @@ const PatientTopNav = () => {
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges(async (data) => {
-      setUser(data?.user || null);
+      setUser(data ? { ...data.user, role: data.role } : null);
       if (data?.user) {
         try {
           const token = await data.user.getIdToken();
@@ -77,8 +77,14 @@ const PatientTopNav = () => {
 
   return (
     <header className="h-16 bg-white border-b border-teal-50 flex items-center justify-between px-6 fixed top-0 right-0 left-0 md:left-64 z-[50] transition-all duration-300">
-      {/* Left side - Page Title */}
+      {/* Left side - Home Link / Page Title */}
       <div className="flex items-center flex-1">
+        <Link 
+          to="/" 
+          className="mr-4 p-2 hover:bg-teal-50 rounded-xl transition-colors md:hidden"
+        >
+          <span className="text-xl font-black text-teal-600 tracking-tight">H</span>
+        </Link>
         <h2 className="text-lg font-black text-slate-800 tracking-tight">
           {getPageTitle()}
         </h2>

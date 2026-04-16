@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { LayoutDashboard, UserCircle, Calendar, FileText, Pill, LogOut } from 'lucide-react';
 import { subscribeToAuthChanges, logout } from '../../auth/services/authService';
 import logo from '../../assets/WebLogo.png';
@@ -52,7 +52,7 @@ const PatientSidebar = () => {
   return (
     <aside className="w-64 bg-white border-r border-teal-100 flex flex-col hidden md:flex h-screen fixed left-0 top-0 transition-transform z-40">
       {/* Logo Area */}
-      <div className="h-16 flex items-center px-6 border-b border-teal-100">
+      <Link to="/" className="h-16 flex items-center px-6 border-b border-teal-100 hover:opacity-80 transition-opacity">
         <img 
           src={logo} 
           alt="HealthEase Logo" 
@@ -60,7 +60,7 @@ const PatientSidebar = () => {
           onError={(e) => e.target.style.display = 'none'} 
         />
         <span className="text-xl font-bold text-teal-600 font-sans tracking-tight">HealthEase</span>
-      </div>
+      </Link>
 
       {/* User Info Area */}
       <div className="px-6 py-8">
