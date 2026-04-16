@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Video, PhoneCall, Mic, MicOff, Camera, CameraOff, Plus, RefreshCw, Square, Copy } from "lucide-react";
+import { Video, PhoneCall, Mic, MicOff, Camera, CameraOff, Plus, RefreshCw, Copy } from "lucide-react";
+import axios from "axios";
 import { auth } from "../../config/firebase";
 import { createSession, generateJoinToken, listSessions, updateSessionStatus } from "../../telemedicine/services/telemedicineApi";
+import doctorAPI from "../services/doctorApi";
 
 const initialForm = {
   appointmentId: "",
@@ -24,6 +26,12 @@ export default function TelemedicinePage() {
   const [copied, setCopied] = useState(false);
   const [cameraOn, setCameraOn] = useState(true);
   const [micOn, setMicOn] = useState(true);
+  const [acceptedAppointments, setAcceptedAppointments] = useState([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [previewReady, setPreviewReady] = useState(false);
+  const localVideoRef = useRef(null);
+  const localStreamRef = useRef(null);
 
   const currentUserId = auth.currentUser?.uid || "doctor";
 
@@ -36,11 +44,124 @@ export default function TelemedicinePage() {
     }
   };
 
+  const loadAcceptedAppointments = async () => {
+    try {
+      setAppointmentsLoading(true);
+      const docRes = await doctorAPI.get("/me");
+      const doctorMongoId = docRes.data?._id;
+
+      if (!doctorMongoId) {
+        setAcceptedAppointments([]);
+        return;
+      }
+
+      const response = await axios.get(`${import.meta.env.VITE_APPOINTMENT_API}/appointments/doctor/${doctorMongoId}`);
+      const confirmed = (response.data || []).filter((item) => item.status === "CONFIRMED");
+      setAcceptedAppointments(confirmed);
+
+      if (confirmed.length > 0) {
+        setForm((prev) => {
+          if (prev.patientId && prev.appointmentId) return prev;
+          return {
+            ...prev,
+            patientId: confirmed[0].patientId || "",
+            appointmentId: confirmed[0]._id || ""
+          };
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      setAcceptedAppointments([]);
+    } finally {
+      setAppointmentsLoading(false);
+    }
+  };
+
   useEffect(() => {
     reloadSessions();
+    loadAcceptedAppointments();
+  }, []);
+
+  useEffect(() => {
+    const initLocalPreview = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setMediaError("Camera preview is not supported in this browser.");
+        return;
+      }
+
+      try {
+        setMediaError("");
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localStreamRef.current = stream;
+
+        const firstVideoTrack = stream.getVideoTracks()[0];
+        const firstAudioTrack = stream.getAudioTracks()[0];
+        setCameraOn(firstVideoTrack ? firstVideoTrack.enabled : false);
+        setMicOn(firstAudioTrack ? firstAudioTrack.enabled : false);
+
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+        setPreviewReady(true);
+      } catch (error) {
+        setPreviewReady(false);
+        setMediaError(error.message || "Unable to access camera and microphone.");
+      }
+    };
+
+    initLocalPreview();
+
+    return () => {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+        localStreamRef.current = null;
+      }
+    };
   }, []);
 
   const activeSessions = useMemo(() => sessions.slice(0, 6), [sessions]);
+
+  const handlePatientSelection = (appointmentId) => {
+    const selected = acceptedAppointments.find((item) => item._id === appointmentId);
+    if (!selected) {
+      setForm((prev) => ({ ...prev, patientId: "", appointmentId: "" }));
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      patientId: selected.patientId || "",
+      appointmentId: selected._id
+    }));
+  };
+
+  const toggleMic = () => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) return;
+
+    const nextState = !micOn;
+    audioTracks.forEach((track) => {
+      track.enabled = nextState;
+    });
+    setMicOn(nextState);
+  };
+
+  const toggleCamera = () => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+
+    const videoTracks = stream.getVideoTracks();
+    if (videoTracks.length === 0) return;
+
+    const nextState = !cameraOn;
+    videoTracks.forEach((track) => {
+      track.enabled = nextState;
+    });
+    setCameraOn(nextState);
+  };
 
   const handleCreateSession = async (event) => {
     event.preventDefault();
@@ -124,10 +245,28 @@ export default function TelemedicinePage() {
             <form onSubmit={handleCreateSession} className="mt-8 space-y-4 rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Appointment ID">
-                  <input value={form.appointmentId} onChange={(event) => setForm((prev) => ({ ...prev, appointmentId: event.target.value }))} className={inputClass} placeholder="appt_123" />
+                  <input
+                    value={form.appointmentId}
+                    readOnly
+                    className={`${inputClass} cursor-not-allowed opacity-80`}
+                    placeholder="Auto from accepted appointment"
+                  />
                 </Field>
                 <Field label="Patient ID">
-                  <input value={form.patientId} onChange={(event) => setForm((prev) => ({ ...prev, patientId: event.target.value }))} className={inputClass} placeholder="patient_456" />
+                  <select
+                    value={form.appointmentId}
+                    onChange={(event) => handlePatientSelection(event.target.value)}
+                    className={inputClass}
+                    disabled={appointmentsLoading || acceptedAppointments.length === 0}
+                  >
+                    {appointmentsLoading && <option value="">Loading accepted appointments...</option>}
+                    {!appointmentsLoading && acceptedAppointments.length === 0 && <option value="">No accepted appointments found</option>}
+                    {!appointmentsLoading && acceptedAppointments.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {item.patientId || "Unknown patient"} ({item.date} {item.time})
+                      </option>
+                    ))}
+                  </select>
                 </Field>
               </div>
 
@@ -153,7 +292,7 @@ export default function TelemedicinePage() {
                   <input type="number" min="60" value={form.expireInSeconds} onChange={(event) => setForm((prev) => ({ ...prev, expireInSeconds: event.target.value }))} className={inputClass} />
                 </Field>
                 <div className="flex items-end">
-                  <button type="submit" disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-400 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-60">
+                  <button type="submit" disabled={loading || !form.appointmentId || !form.patientId} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-400 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-60">
                     <Plus className="h-4 w-4" /> {loading ? "Creating..." : "Create Session"}
                   </button>
                 </div>
@@ -242,24 +381,28 @@ export default function TelemedicinePage() {
         <div className="rounded-[2rem] bg-slate-950 p-6 text-white shadow-xl shadow-slate-900/10">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-black">Video Call UI</h2>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Mock controls</span>
+            <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Local preview</span>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="rounded-[1.5rem] border border-white/10 bg-slate-900 p-4">
-              <div className="flex h-56 items-center justify-center rounded-[1.25rem] border border-dashed border-white/10 bg-gradient-to-br from-slate-800 to-slate-900">
-                <div className="text-center">
-                  <Video className="mx-auto h-12 w-12 text-sky-300" />
-                  <p className="mt-3 text-sm font-bold text-slate-100">Patient / Doctor video feed</p>
-                  <p className="mt-1 text-xs text-slate-400">Wire this to Agora or Jitsi SDK next.</p>
-                </div>
+              <div className="relative h-56 overflow-hidden rounded-[1.25rem] border border-dashed border-white/10 bg-gradient-to-br from-slate-800 to-slate-900">
+                {previewReady ? (
+                  <video ref={localVideoRef} autoPlay muted playsInline className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-4 text-center">
+                    <div>
+                      <Video className="mx-auto h-12 w-12 text-sky-300" />
+                      <p className="mt-3 text-sm font-bold text-slate-100">Camera preview unavailable</p>
+                      <p className="mt-1 text-xs text-slate-400">{mediaError || "Allow camera and microphone access to start preview."}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-              <ControlButton active={micOn} onClick={() => setMicOn((prev) => !prev)} activeLabel="Mic on" inactiveLabel="Mic off" icon={micOn ? Mic : MicOff} />
-              <ControlButton active={cameraOn} onClick={() => setCameraOn((prev) => !prev)} activeLabel="Camera on" inactiveLabel="Camera off" icon={cameraOn ? Camera : CameraOff} />
-              <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-black text-white transition hover:bg-rose-400">
-                <Square className="h-4 w-4" /> Leave Call
-              </button>
+              <ControlButton active={micOn} onClick={toggleMic} activeLabel="Mic on" inactiveLabel="Mic off" icon={micOn ? Mic : MicOff} disabled={!previewReady} />
+              <ControlButton active={cameraOn} onClick={toggleCamera} activeLabel="Camera on" inactiveLabel="Camera off" icon={cameraOn ? Camera : CameraOff} disabled={!previewReady} />
+              {!previewReady && <p className="text-xs text-slate-300">Enable permissions in browser to activate controls.</p>}
             </div>
           </div>
         </div>
@@ -277,9 +420,9 @@ function Field({ label, children }) {
   );
 }
 
-function ControlButton({ active, onClick, activeLabel, inactiveLabel, icon: Icon }) {
+function ControlButton({ active, onClick, activeLabel, inactiveLabel, icon: Icon, disabled = false }) {
   return (
-    <button onClick={onClick} className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${active ? "bg-emerald-500 text-white hover:bg-emerald-400" : "bg-white/10 text-white hover:bg-white/15"}`}>
+    <button onClick={onClick} disabled={disabled} className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${active ? "bg-emerald-500 text-white hover:bg-emerald-400" : "bg-white/10 text-white hover:bg-white/15"} disabled:cursor-not-allowed disabled:opacity-60`}>
       <Icon className="h-4 w-4" /> {active ? activeLabel : inactiveLabel}
     </button>
   );

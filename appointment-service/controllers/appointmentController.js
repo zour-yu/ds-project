@@ -45,7 +45,7 @@ exports.createAppointment = async (req, res) => {
     // 🔹 Save appointment
     const appointment = new Appointment({
       doctorId,
-      patientId: "patient123", // later replace with auth user
+      patientId: req.user?.firebaseId || "patient123",
       date,
       time,
       name,
@@ -188,5 +188,23 @@ exports.addPrescription = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Get logged-in patient appointments
+exports.getPatientAppointments = async (req, res) => {
+  try {
+    const patientId = req.user?.firebaseId;
+
+    if (!patientId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const appointments = await Appointment.find({ patientId }).sort({ createdAt: -1 });
+    res.json(appointments);
+  } catch (err) {
+    const statusCode = err.response?.status || 500;
+    const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+    res.status(statusCode).json({ error: errorMessage });
   }
 };

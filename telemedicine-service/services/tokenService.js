@@ -1,6 +1,16 @@
 const jwt = require("jsonwebtoken");
 const { RtcTokenBuilder, RtcRole } = require("agora-access-token");
 
+const normalizeJitsiRoomName = (value) => {
+  const room = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9_-]/g, "");
+
+  return room || "default-room";
+};
+
 const toAgoraUid = (uid) => {
   const asNumber = Number(uid);
   if (Number.isFinite(asNumber) && asNumber >= 0) {
@@ -63,11 +73,13 @@ const generateJitsiToken = ({ channelName, uid, role = "guest", expireInSeconds 
   const now = Math.floor(Date.now() / 1000);
   const exp = now + Number(expireInSeconds);
 
+  const normalizedRoom = normalizeJitsiRoomName(channelName);
+
   const payload = {
     aud: "jitsi",
     iss: appId,
     sub: domain,
-    room: channelName,
+    room: normalizedRoom,
     exp,
     nbf: now,
     context: {
@@ -80,6 +92,7 @@ const generateJitsiToken = ({ channelName, uid, role = "guest", expireInSeconds 
 
   return {
     token: jwt.sign(payload, appSecret, { algorithm: "HS256" }),
+    channelName: normalizedRoom,
     appId,
     domain,
     uid: String(uid || "guest"),

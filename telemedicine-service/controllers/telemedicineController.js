@@ -5,6 +5,16 @@ const buildChannelName = (appointmentId) => {
   return `session-${appointmentId}-${Date.now()}`;
 };
 
+const normalizeChannelName = (value) => {
+  const room = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9_-]/g, "");
+
+  return room || buildChannelName("room");
+};
+
 exports.createSession = async (req, res) => {
   try {
     const { appointmentId, doctorId, patientId, provider = "jitsi", channelName, metadata } = req.body;
@@ -28,7 +38,7 @@ exports.createSession = async (req, res) => {
       doctorId,
       patientId,
       provider,
-      channelName: channelName || buildChannelName(appointmentId),
+      channelName: normalizeChannelName(channelName || buildChannelName(appointmentId)),
       metadata: metadata || {}
     });
 
@@ -117,7 +127,7 @@ exports.updateSessionStatus = async (req, res) => {
     const session = await TelemedicineSession.findByIdAndUpdate(
       req.params.id,
       updates,
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!session) {
