@@ -49,7 +49,12 @@ const patientSchema = new mongoose.Schema({
     }],
     medicalHistory: [medicalHistorySchema],
     medicalReports: [medicalReportSchema], // Array of uploaded reports
-    emergencyContact: emergencyContactSchema
+    emergencyContact: emergencyContactSchema,
+    activeStatus: {
+        type: String,
+        enum: ['Active', 'Suspended', 'Deleted'],
+        default: 'Active'
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Patient', patientSchema);

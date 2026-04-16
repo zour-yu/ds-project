@@ -22,6 +22,11 @@ import DoctorDetails from "./doctor/pages/DoctorDetails";
 import BookingPage from "./doctor/pages/BookingPage";
 import TelemedicineRoom from "./telemedicine/pages/TelemedicineRoom";
 
+import AdminManagementLayout from "./layouts/AdminManagementLayout";
+import AdminDashboard from "./admin/pages/AdminDashboard";
+import VerifyDoctors from "./admin/pages/VerifyDoctors";
+import AdminPatients from "./admin/pages/AdminPatients";
+
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
 
@@ -104,6 +109,39 @@ function App() {
               <PatientManagementLayout>
                 <Prescriptions />
               </PatientManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminDashboard />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/verify-doctors"
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <VerifyDoctors />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/patients"
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminPatients />
+              </AdminManagementLayout>
             </PrivateRoute>
           }
         />

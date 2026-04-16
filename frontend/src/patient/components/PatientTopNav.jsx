@@ -18,7 +18,7 @@ const PatientTopNav = () => {
       if (data?.user) {
         try {
           const token = await data.user.getIdToken();
-          const response = await axios.get(`http://localhost:5002/api/patients/profile`, {
+          const response = await axios.get(`${import.meta.env.VITE_PATIENT_API}/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data) {
@@ -67,8 +67,9 @@ const PatientTopNav = () => {
   };
 
   const menuItems = [
-    { name: 'My Profile', path: '/patient/profile', icon: User },
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
+    { name: 'My Profile', path: '/patient/profile', icon: User },
+    
     { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
     { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
@@ -85,11 +86,6 @@ const PatientTopNav = () => {
 
       {/* Right side - Profile & Notifications */}
       <div className="flex items-center space-x-6">
-        <button className="relative p-2 text-gray-400 hover:text-teal-600 transition-colors rounded-full hover:bg-teal-50">
-          <Bell className="w-6 h-6" />
-          <span className="absolute top-2 right-2.5 h-2.5 w-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
-        </button>
-
         {/* Profile Dropdown Container */}
         <div className="relative" ref={dropdownRef}>
           <button 

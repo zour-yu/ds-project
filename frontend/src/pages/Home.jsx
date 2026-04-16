@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Video, ArrowRight, ShieldCheck, Stethoscope } from 'lucide-react';
 import { subscribeToAuthChanges } from '../auth/services/authService';
 // IMPORTANT: Updated extension from .png to .jpg based on actual file existence
@@ -8,21 +8,33 @@ import heroImage from '../assets/Home Clinic.jpg';
 const Home = () => {
   const [telemedicinePath, setTelemedicinePath] = useState('/doctors');
   const [telemedicineLabel, setTelemedicineLabel] = useState('Telemedicine');
+  const [userRole, setUserRole] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((authState) => {
-      if (authState?.role === 'doctor') {
+      const role = authState?.role || null;
+      setUserRole(role);
+      setLoading(false);
+
+      if (role === 'doctor') {
         setTelemedicinePath('/doctor-dashboard/telemedicine');
         setTelemedicineLabel('Telemedicine Control Room');
-        return;
+      } else {
+        setTelemedicinePath('/doctors');
+        setTelemedicineLabel('Find Telemedicine Doctor');
       }
-
-      setTelemedicinePath('/doctors');
-      setTelemedicineLabel('Find Telemedicine Doctor');
     });
 
     return () => unsubscribe();
   }, []);
+
+  if (loading) return null;
+
+  // Redirect Admin away from the public Home page
+  if (userRole === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
 
   return (
     <div className="flex-grow bg-white">
