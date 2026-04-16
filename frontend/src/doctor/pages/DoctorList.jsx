@@ -4,17 +4,29 @@ import { useNavigate } from "react-router-dom";
 
 export default function DoctorList() {
   const [doctors, setDoctors] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    API.get("/doctors")
+    API.get("/")
       .then(res => {
         if (Array.isArray(res.data)) {
           setDoctors(res.data);
         }
+        setLoading(false);
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error("Error fetching doctors:", err);
+        setLoading(false);
+      });
   }, []);
+
+  const filteredDoctors = doctors.filter(doc => 
+    doc.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.specialty?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.hospital?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -23,9 +35,40 @@ export default function DoctorList() {
         Find Your Doctor
       </h1>
 
+      {/* Search Bar */}
+      <div className="max-w-2xl mx-auto mb-8">
+        <input
+          type="text"
+          placeholder="Search by name, specialty, or hospital..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-3 rounded-lg border border-gray-300 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 
+                     shadow-sm"
+        />
+      </div>
+
+      {loading && (
+        <div className="flex justify-center items-center min-h-96">
+          <p className="text-gray-600 text-lg">Loading doctors...</p>
+        </div>
+      )}
+
+      {!loading && doctors.length === 0 && (
+        <div className="flex justify-center items-center min-h-96">
+          <p className="text-gray-600 text-lg">No doctors available yet.</p>
+        </div>
+      )}
+
+      {!loading && filteredDoctors.length === 0 && doctors.length > 0 && (
+        <div className="flex justify-center items-center min-h-96">
+          <p className="text-gray-600 text-lg">No doctors match your search.</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         
-        {doctors.map(doc => (
+        {filteredDoctors.map(doc => (
           <div
             key={doc._id}
             onClick={() => navigate(`/doctor/${doc._id}`)}
