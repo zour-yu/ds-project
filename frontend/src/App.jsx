@@ -53,8 +53,8 @@ function App() {
         <Route path="/" element={<MainLayout><Home /></MainLayout>} />
         <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
         <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
-        <Route path="/doctors" element={<DoctorList />} />
-        <Route path="/book/:id" element={<BookingPage />} />
+        <Route path="/doctors" element={<MainLayout><DoctorList /></MainLayout>} />
+        <Route path="/book/:id" element={<MainLayout><BookingPage /></MainLayout>} />
         
         <Route 
           path="/patient/dashboard" 
@@ -131,12 +131,12 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile" element={<MainLayout><ProfilePage />} />
           <Route path="availability" element={<AvailabilityPage />} />
           <Route path="appointments" element={<DoctorAppointments />} />
         </Route>
 
-          <Route path="/doctor/:id" element={<DoctorDetails />} />
+          <Route path="/doctor/:id" element={<MainLayout><DoctorDetails /></MainLayout>} />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
