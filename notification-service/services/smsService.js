@@ -1,4 +1,4 @@
-const axios = require("axios");
+/*const axios = require("axios");
 
 exports.sendSMS = async (phone, message) => {
   try {
@@ -23,5 +23,26 @@ exports.sendSMS = async (phone, message) => {
 
   } catch (err) {
     console.error("Notify.lk error:", err.response?.data || err.message);
+  }
+};*/
+
+const twilio = require("twilio");
+
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+
+exports.sendSMS = async (phone, message) => {
+  try {
+    await client.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE,
+      to: phone
+    });
+
+    console.log("SMS sent via Twilio to", phone);
+  } catch (err) {
+    console.error("Twilio error:", err.message);
   }
 };

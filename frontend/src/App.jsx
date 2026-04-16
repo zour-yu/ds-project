@@ -12,6 +12,7 @@ import PatientProfile from "./patient/pages/PatientProfile";
 import PatientDashboard from "./patient/pages/PatientDashboard";
 import MedicalRecords from "./patient/pages/MedicalRecords";
 import Prescriptions from "./patient/pages/Prescriptions";
+import MyAppointments from "./patient/pages/MyAppointments";
 import DoctorDashboard from "./doctor/pages/DoctorDashboard";
 import ProfilePage from "./doctor/pages/ProfilePage";
 import AvailabilityPage from "./doctor/pages/AvailabilityPage";
@@ -42,6 +43,8 @@ const PrivateRoute = ({ children, allowedRole }) => {
     return () => unsub();
   }, []);
 
+  if (userState.loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  if (!userState.user) return <Navigate to="/login" />;
   if (userState.loading) {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   }
@@ -109,6 +112,17 @@ function App() {
               <PatientManagementLayout>
                 <Prescriptions />
               </PatientManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/my-appointments"
+          element={
+            <PrivateRoute allowedRole="patient">
+              <MainLayout>
+                <MyAppointments />
+              </MainLayout>
             </PrivateRoute>
           }
         />

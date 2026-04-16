@@ -2,7 +2,7 @@ const Payment = require("../models/paymentModel");
 const { createPaymentIntent } = require("../services/stripeService");
 const axios = require("axios");
 
-const APPOINTMENT_SERVICE_URL = "http://localhost:5002/api/appointments";
+const APPOINTMENT_SERVICE_URL = process.env.APPOINTMENT_SERVICE_URL || "http://localhost:5003/api/appointments";
 
 exports.createPayment = async (req, res) => {
     try {

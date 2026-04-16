@@ -28,13 +28,20 @@ const Register = () => {
     try {
       const { email, password, name, role, phoneNumber, address } = formData;
       await register(email, password, name, role, { phoneNumber, address });
+
       
-      // LOG OUT immediately after registration to prevent auto-login
-      // This ensures they must go through the Login page to establish a fresh session with roles/claims
-      await logout();
+      // Redirect based on role
+      if (role === 'doctor') {
+        toast.success('Registration successful! Welcome to your dashboard.');
+        navigate('/doctor-dashboard/profile');
+      } else {
+        // LOG OUT immediately after registration for patients to prevent auto-login
+        // This ensures they must go through the Login page to establish a fresh session with roles/claims
+        await logout();
+        toast.success('Registration successful! Please sign in.');
+        navigate('/login');
+      }
       
-      toast.success('Registration successful! Please sign in.');
-      navigate('/login');
     } catch (error) {
       toast.error(error.message || 'Error occurred');
     } finally {
