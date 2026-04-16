@@ -7,7 +7,7 @@ import { createSession, generateJoinToken, listSessions, updateSessionStatus } f
 const initialForm = {
   appointmentId: "",
   patientId: "",
-  provider: "agora",
+  provider: "jitsi",
   channelName: "",
   role: "host",
   expireInSeconds: 3600
@@ -134,7 +134,6 @@ export default function TelemedicinePage() {
               <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Provider">
                   <select value={form.provider} onChange={(event) => setForm((prev) => ({ ...prev, provider: event.target.value }))} className={inputClass}>
-                    <option value="agora">Agora</option>
                     <option value="jitsi">Jitsi</option>
                   </select>
                 </Field>

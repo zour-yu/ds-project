@@ -1,8 +1,8 @@
 const Appointment = require("../models/Appointment");
 const axios = require("axios");
 
-const DOCTOR_SERVICE_URL = "http://localhost:5001/api/doctors";
-const NOTIFICATION_SERVICE_URL = "http://localhost:5004/api/notifications";
+const DOCTOR_SERVICE_URL = process.env.DOCTOR_SERVICE_URL || "http://localhost:5002/api/doctors";
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5004/api/notifications";
 
 // ✅ Create appointment
 exports.createAppointment = async (req, res) => {
@@ -27,6 +27,21 @@ exports.createAppointment = async (req, res) => {
       time
     });
 
+    // 🔹 Get Doctor Details
+    let doctorEmail = null;
+    let doctorPhone = null;
+    let doctorName = null;
+    try {
+      const docRes = await axios.get(`${DOCTOR_SERVICE_URL}/${doctorId}`);
+      if (docRes.data) {
+        doctorEmail = docRes.data.email;
+        doctorPhone = docRes.data.phone;
+        doctorName = docRes.data.name;
+      }
+    } catch (docErr) {
+      console.error("Error fetching doctor details:", docErr.message);
+    }
+
     // 🔹 Save appointment
     const appointment = new Appointment({
       doctorId,
@@ -49,6 +64,9 @@ exports.createAppointment = async (req, res) => {
         phone,
         name,
         doctorId,
+        doctorEmail,
+        doctorPhone,
+        doctorName,
         date,
         time
       });
@@ -59,8 +77,10 @@ exports.createAppointment = async (req, res) => {
     res.json(appointment);
 
   } catch (err) {
-    console.error("ERROR:", err.message);
-    res.status(500).json({ error: err.message });
+    const statusCode = err.response?.status || 500;
+    const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+    console.error("ERROR:", errorMessage);
+    res.status(statusCode).json({ error: errorMessage });
   }
 };
 
@@ -74,7 +94,9 @@ exports.getDoctorAppointments = async (req, res) => {
     res.json(appointments);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const statusCode = err.response?.status || 500;
+    const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+    res.status(statusCode).json({ error: errorMessage });
   }
 };
 
@@ -84,6 +106,18 @@ exports.updateStatus = async (req, res) => {
     const { id } = req.params;
     const { status, email, phone } = req.body;
 
+    const statusMap = {
+      approved: "CONFIRMED",
+      confirmed: "CONFIRMED",
+      rejected: "REJECTED"
+    };
+
+    const normalizedStatus = statusMap[String(status || "").toLowerCase()] || status;
+
+    if (!["PENDING_PAYMENT", "CONFIRMED", "REJECTED"].includes(normalizedStatus)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
     const appointment = await Appointment.findById(id);
 
     if (!appointment) {
@@ -91,7 +125,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     // 🔥 If rejected → free slot
-    if (status === "rejected") {
+    if (normalizedStatus === "REJECTED") {
       await axios.patch(`${DOCTOR_SERVICE_URL}/free-slot`, {
         doctorId: appointment.doctorId,
         date: appointment.date,
@@ -99,7 +133,7 @@ exports.updateStatus = async (req, res) => {
       });
     }
 
-    appointment.status = status;
+    appointment.status = normalizedStatus;
     await appointment.save();
 
     // 🔹 Send notification
@@ -108,7 +142,7 @@ exports.updateStatus = async (req, res) => {
         email,
         phone,
         name: appointment.name,
-        status
+        status: normalizedStatus
       });
     } catch (notifyErr) {
       console.error("Notification error:", notifyErr.message);
@@ -117,7 +151,9 @@ exports.updateStatus = async (req, res) => {
     res.json(appointment);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const statusCode = err.response?.status || 500;
+    const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+    res.status(statusCode).json({ error: errorMessage });
   }
 };
 

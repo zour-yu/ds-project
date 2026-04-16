@@ -47,6 +47,10 @@ const generateJitsiToken = ({ channelName, uid, role = "guest", expireInSeconds 
   const domain = process.env.JITSI_DOMAIN || "meet.jit.si";
 
   if (!appId || !appSecret) {
+    if (domain !== "meet.jit.si") {
+      throw new Error("JITSI_APP_ID and JITSI_APP_SECRET are required for self-hosted Jitsi");
+    }
+
     return {
       token: null,
       appId: appId || null,
