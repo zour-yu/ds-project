@@ -42,6 +42,8 @@ const PrivateRoute = ({ children, allowedRole }) => {
     return () => unsub();
   }, []);
 
+  if (userState.loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  if (!userState.user) return <Navigate to="/login" />;
   if (userState.loading) {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   }
