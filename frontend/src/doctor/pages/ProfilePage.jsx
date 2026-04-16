@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
         {/* 🔹 PROFILE HEADER */}
         <div className="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
-          
+
           <img
             src="https://img.freepik.com/premium-vector/user-profile-icon-circle_1256048-12499.jpg?semt=ais_hybrid&w=740&q=80"
             className="w-28 h-28 rounded-full border-4 border-blue-100"

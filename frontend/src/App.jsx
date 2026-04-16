@@ -31,10 +31,10 @@ const PrivateRoute = ({ children, allowedRole }) => {
   useEffect(() => {
     const unsub = subscribeToAuthChanges((data) => {
       console.log("Auth State Changed:", data);
-      setUserState({ 
-        loading: false, 
-        user: data?.user || null, 
-        role: data?.role || null 
+      setUserState({
+        loading: false,
+        user: data?.user || null,
+        role: data?.role || null
       });
     });
     return () => unsub();
@@ -42,7 +42,7 @@ const PrivateRoute = ({ children, allowedRole }) => {
 
   if (userState.loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   if (!userState.user) return <Navigate to="/login" />;
-  
+
   if (allowedRole && userState.role && userState.role !== allowedRole) {
     console.warn(`Role mismatch: expected ${allowedRole}, got ${userState.role}`);
     return <Navigate to="/" />;
@@ -60,31 +60,32 @@ function App() {
         <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
         <Route path="/doctors" element={<MainLayout><DoctorList /></MainLayout>} />
         <Route path="/book/:id" element={<MainLayout><BookingPage /></MainLayout>} />
-        
-        <Route 
-          path="/patient/dashboard" 
+        <Route path="/payment" element={<MainLayout><PaymentPage /></MainLayout>} />
+        <Route path="/payment-success" element={<MainLayout><PaymentSuccess /></MainLayout>} />
+        <Route
+          path="/patient/dashboard"
           element={
             <PrivateRoute allowedRole="patient">
               <PatientManagementLayout>
                 <PatientDashboard />
               </PatientManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/patient/profile" 
+        <Route
+          path="/patient/profile"
           element={
             <PrivateRoute allowedRole="patient">
               <PatientManagementLayout>
                 <PatientProfile />
               </PatientManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/doctor/*" 
+        <Route
+          path="/doctor/*"
           element={
             <PrivateRoute allowedRole="doctor">
               <DoctorDashboard />
@@ -96,84 +97,84 @@ function App() {
           <Route path="appointments" element={<DoctorAppointments />} />
         </Route>
 
-        <Route 
-          path="/patient/records" 
+        <Route
+          path="/patient/records"
           element={
             <PrivateRoute allowedRole="patient">
               <PatientManagementLayout>
                 <MedicalRecords />
               </PatientManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/patient/prescriptions" 
+        <Route
+          path="/patient/prescriptions"
           element={
             <PrivateRoute allowedRole="patient">
               <PatientManagementLayout>
                 <Prescriptions />
               </PatientManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/doctor/home" 
+
+        <Route
+          path="/doctor/home"
           element={
             <PrivateRoute allowedRole="doctor">
               <div className="p-8">Doctor Dashboard (Coming Soon)</div>
             </PrivateRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/admin/dashboard" 
+        <Route
+          path="/admin/dashboard"
           element={
             <PrivateRoute allowedRole="admin">
               <AdminManagementLayout>
                 <AdminDashboard />
               </AdminManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/admin/verify-doctors" 
+        <Route
+          path="/admin/verify-doctors"
           element={
             <PrivateRoute allowedRole="admin">
               <AdminManagementLayout>
                 <VerifyDoctors />
               </AdminManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/admin/patients" 
+        <Route
+          path="/admin/patients"
           element={
             <PrivateRoute allowedRole="admin">
               <AdminManagementLayout>
                 <AdminPatients />
               </AdminManagementLayout>
             </PrivateRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/doctor-dashboard/*" 
+
+        <Route
+          path="/doctor-dashboard/*"
           element={
             <PrivateRoute allowedRole="doctor">
               <DoctorDashboard />
             </PrivateRoute>
           }
         >
-          <Route path="profile" element={<MainLayout><ProfilePage />} />
+          <Route path="profile" element={<MainLayout><ProfilePage /></MainLayout>} />
           <Route path="availability" element={<AvailabilityPage />} />
           <Route path="appointments" element={<DoctorAppointments />} />
         </Route>
 
-          <Route path="/doctor/:id" element={<MainLayout><DoctorDetails /></MainLayout>} />
+        <Route path="/doctor/:id" element={<MainLayout><DoctorDetails /></MainLayout>} />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
