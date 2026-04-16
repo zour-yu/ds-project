@@ -10,6 +10,8 @@ export default function BookingPage() {
   const [form, setForm] = useState({
     name: "",
     age: "",
+    email: "",
+    phone: "",
     symptoms: ""
   });
 
@@ -27,6 +29,8 @@ export default function BookingPage() {
       data.append("symptoms", form.symptoms);
 
       if (file) data.append("file", file);
+      data.append("email", form.email);
+      data.append("phone", form.phone);
 
       // 1️⃣ Create appointment
       const res = await API.post(
@@ -80,13 +84,33 @@ export default function BookingPage() {
             />
           </div>
 
-          <div>
+              <div>
             <label className="text-sm text-gray-600">Age</label>
             <input
               type="number"
               className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
               placeholder="Enter your age"
               onChange={e => setForm({ ...form, age: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600">Email</label>
+            <input
+              type="email"
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Enter your email"
+              onChange={e => setForm({ ...form, email: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600">Phone</label>
+            <input
+              type="tel"
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Enter your phone number"
+              onChange={e => setForm({ ...form, phone: e.target.value })}
             />
           </div>
 

@@ -49,16 +49,28 @@ exports.appointmentCreated = async (req, res) => {
 // ✅ Appointment Status Update
 exports.appointmentStatus = async (req, res) => {
   try {
-    const { email, phone, name, status } = req.body;
+    const { email, phone, name, status, doctorEmail, doctorPhone, doctorName } = req.body;
 
-    const message = `Hi ${name}, your appointment is ${status}`;
+    const patientMessage = `Hi ${name}, your appointment is ${status}`;
 
     await notifyUser(
       email,
       phone,
       "Appointment Status Update",
-      message
+      patientMessage
     );
+
+    if (doctorEmail || doctorPhone) {
+      const docName = doctorName || "Doctor";
+      const doctorMessage = `Hi ${docName}, the appointment for ${name} is now ${status}.`;
+      await notifyUser(
+        doctorEmail,
+        doctorPhone,
+        "Appointment Status Update",
+        doctorMessage
+      );
+      console.log(`Notification sent for appointmentStatus → ${doctorEmail}`);
+    }
 
     console.log(`Notification sent for appointmentStatus → ${email}`);
 

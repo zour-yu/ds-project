@@ -1,7 +1,7 @@
 const Appointment = require("../models/Appointment");
 const axios = require("axios");
 
-const DOCTOR_SERVICE_URL = process.env.DOCTOR_SERVICE_URL || "http://localhost:5002/api/doctors";
+const DOCTOR_SERVICE_URL = process.env.DOCTOR_SERVICE_URL || "http://localhost:5003/api/doctors";
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5004/api/notifications";
 
 // ✅ Create appointment
@@ -50,6 +50,8 @@ exports.createAppointment = async (req, res) => {
       time,
       name,
       age,
+      email,
+      phone,
       symptoms,
       report,
       status: "PENDING_PAYMENT"
@@ -136,14 +138,29 @@ exports.updateStatus = async (req, res) => {
     appointment.status = normalizedStatus;
     await appointment.save();
 
+    const notificationPayload = {
+      email: email || appointment.email,
+      phone: phone || appointment.phone,
+      name: appointment.name,
+      status: normalizedStatus
+    };
+
+    try {
+      if (appointment.doctorId) {
+        const docRes = await axios.get(`${DOCTOR_SERVICE_URL}/${appointment.doctorId}`);
+        if (docRes.data) {
+          notificationPayload.doctorEmail = docRes.data.email;
+          notificationPayload.doctorPhone = docRes.data.phone;
+          notificationPayload.doctorName = docRes.data.name;
+        }
+      }
+    } catch (docErr) {
+      console.error("Error fetching doctor details for notification:", docErr.message);
+    }
+
     // 🔹 Send notification
     try {
-      await axios.post(`${NOTIFICATION_SERVICE_URL}/appointment-status`, {
-        email,
-        phone,
-        name: appointment.name,
-        status: normalizedStatus
-      });
+      await axios.post(`${NOTIFICATION_SERVICE_URL}/appointment-status`, notificationPayload);
     } catch (notifyErr) {
       console.error("Notification error:", notifyErr.message);
     }
