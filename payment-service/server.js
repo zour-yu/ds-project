@@ -4,7 +4,7 @@ const connectDB = require("./src/config/db");
 
 connectDB();
 
-const PORT = 5005;
+const PORT = process.env.PORT || 5005;
 
 app.listen(PORT, () => {
     console.log(`Payment Service running on port ${PORT}`);
