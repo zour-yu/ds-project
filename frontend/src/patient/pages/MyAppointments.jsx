@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Clock, Loader2, Video } from "lucide-react";
+import { Calendar, Clock, CreditCard, Loader2, Video } from "lucide-react";
 import { auth } from "../../config/firebase";
 import patientApi from "../services/patientApi";
 import { listSessions } from "../../telemedicine/services/telemedicineApi";
 
 const CLOSED_STATUSES = ["ENDED", "CANCELLED"];
+const DEFAULT_CONSULTATION_FEE = 2000;
 
 export default function MyAppointments() {
   const navigate = useNavigate();
@@ -76,7 +77,9 @@ export default function MyAppointments() {
         {appointments.map((appointment) => {
           const session = sessionsByAppointment[appointment._id];
           const isConfirmed = appointment.status === "CONFIRMED";
+          const isPendingPayment = appointment.status === "PENDING_PAYMENT";
           const sessionAvailable = isConfirmed && session && !CLOSED_STATUSES.includes(session.status);
+          const paymentAmount = appointment.amount || DEFAULT_CONSULTATION_FEE;
 
           return (
             <article key={appointment._id} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
@@ -88,6 +91,8 @@ export default function MyAppointments() {
                 <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white ${
                   appointment.status === "CONFIRMED"
                     ? "bg-emerald-500"
+                    : appointment.status === "PENDING_PAYMENT"
+                      ? "bg-orange-500"
                     : appointment.status === "REJECTED"
                       ? "bg-rose-500"
                       : "bg-amber-500"
@@ -109,9 +114,23 @@ export default function MyAppointments() {
                   >
                     <Video className="h-4 w-4" /> Join Telemedicine
                   </button>
+                ) : isPendingPayment ? (
+                  <button
+                    onClick={() =>
+                      navigate("/payment", {
+                        state: {
+                          appointmentId: appointment._id,
+                          amount: paymentAmount
+                        }
+                      })
+                    }
+                    className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-blue-500"
+                  >
+                    <CreditCard className="h-4 w-4" /> Complete Payment
+                  </button>
                 ) : !isConfirmed ? (
                   <span className="rounded-2xl bg-amber-100 px-4 py-2 text-sm font-bold text-amber-800">
-                    Awaiting doctor confirmation
+                    {appointment.status === "REJECTED" ? "Appointment was rejected" : "Awaiting doctor confirmation"}
                   </span>
                 ) : (
                   <span className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600">
