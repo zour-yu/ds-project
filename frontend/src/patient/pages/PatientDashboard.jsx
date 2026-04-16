@@ -12,7 +12,6 @@ import {
   Plus,
   Search,
   ChevronRight,
-  Brain,
   Video,
   ArrowRight
 } from 'lucide-react';
@@ -90,25 +89,7 @@ const PatientDashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Link to="/patient/ai-symptom-checker" className="lg:col-span-2 rounded-[2rem] bg-slate-950 text-white p-7 shadow-2xl shadow-slate-200/20 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(45,212,191,0.22),_transparent_32%)]" />
-          <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-5">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-teal-200">
-                <Brain className="w-3.5 h-3.5" /> AI first
-              </div>
-              <h2 className="mt-4 text-2xl font-black tracking-tight">Check symptoms before your next appointment.</h2>
-              <p className="mt-2 max-w-2xl text-sm text-slate-300 leading-6">
-                Get a specialty recommendation, urgency cue, and guidance to help you decide whether to book, wait, or seek urgent care.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-2xl bg-teal-400 px-5 py-3 font-black text-slate-950 transition group-hover:bg-teal-300">
-              Open checker <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-        </Link>
-
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Link to="/doctors" className="rounded-[2rem] bg-white p-7 shadow-sm border border-slate-100 hover:border-teal-200 transition-colors group">
           <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-teal-700">
             <Video className="w-3.5 h-3.5" /> Telemedicine ready

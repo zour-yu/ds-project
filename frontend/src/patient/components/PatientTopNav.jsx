@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { subscribeToAuthChanges, logout } from '../../auth/services/authService';
-import { ChevronDown, User, LayoutDashboard, Calendar, FileText, Pill, LogOut, Bell, Brain } from 'lucide-react';
+import { ChevronDown, User, LayoutDashboard, Calendar, FileText, Pill, LogOut, Bell } from 'lucide-react';
 
 const PatientTopNav = () => {
   const [user, setUser] = useState(null);
@@ -61,7 +61,6 @@ const PatientTopNav = () => {
       case '/patient/profile': return 'My Profile';
       case '/patient/appointments': return 'Appointments';
       case '/patient/records': return 'Medical Records';
-      case '/patient/ai-symptom-checker': return 'AI Symptom Checker';
       case '/patient/prescriptions': return 'Prescriptions';
       default: return 'Overview';
     }
@@ -72,7 +71,6 @@ const PatientTopNav = () => {
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
     { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
-    { name: 'AI Symptom Checker', path: '/patient/ai-symptom-checker', icon: Brain },
     { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
   ];
 

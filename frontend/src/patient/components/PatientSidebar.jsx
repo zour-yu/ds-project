@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserCircle, Calendar, FileText, Pill, LogOut, Brain } from 'lucide-react';
+import { LayoutDashboard, UserCircle, Calendar, FileText, Pill, LogOut } from 'lucide-react';
 import { subscribeToAuthChanges, logout } from '../../auth/services/authService';
 import logo from '../../assets/WebLogo.png';
 
@@ -37,7 +37,6 @@ const PatientSidebar = () => {
     { name: 'My Profile', path: '/patient/profile', icon: UserCircle },
     { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
-    { name: 'AI Symptom Checker', path: '/patient/ai-symptom-checker', icon: Brain },
     { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
   ];
 

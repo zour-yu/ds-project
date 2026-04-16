@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Brain, Video, ArrowRight, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Video, ArrowRight, ShieldCheck, Stethoscope } from 'lucide-react';
+import { subscribeToAuthChanges } from '../auth/services/authService';
 // IMPORTANT: Updated extension from .png to .jpg based on actual file existence
 import heroImage from '../assets/Home Clinic.jpg'; 
 
 const Home = () => {
+  const [telemedicinePath, setTelemedicinePath] = useState('/doctors');
+  const [telemedicineLabel, setTelemedicineLabel] = useState('Telemedicine');
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((authState) => {
+      if (authState?.role === 'doctor') {
+        setTelemedicinePath('/doctor-dashboard/telemedicine');
+        setTelemedicineLabel('Telemedicine Control Room');
+        return;
+      }
+
+      setTelemedicinePath('/doctors');
+      setTelemedicineLabel('Find Telemedicine Doctor');
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <div className="flex-grow bg-white">
       {/* Hero Section */}
@@ -27,13 +46,8 @@ const Home = () => {
                     </Link>
                   </div>
                   <div className="mt-3 sm:mt-0 sm:ml-3">
-                    <Link to="/patient/ai-symptom-checker" className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-slate-900 hover:bg-slate-800 transition-colors md:py-4 md:text-lg md:px-10">
-                      <Brain className="w-4 h-4" /> Try AI Symptom Checker
-                    </Link>
-                  </div>
-                  <div className="mt-3 sm:mt-0 sm:ml-3">
-                    <Link to="/doctor-dashboard/telemedicine" className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 transition-colors md:py-4 md:text-lg md:px-10">
-                      <Video className="w-4 h-4" /> Telemedicine
+                    <Link to={telemedicinePath} className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 transition-colors md:py-4 md:text-lg md:px-10">
+                      <Video className="w-4 h-4" /> {telemedicineLabel}
                     </Link>
                   </div>
                   <div className="mt-3 sm:mt-0 sm:ml-3">
@@ -74,17 +88,14 @@ const Home = () => {
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-teal-200">
                   <ShieldCheck className="w-3.5 h-3.5" /> Fast access
                 </div>
-                <h2 className="mt-4 text-3xl font-black tracking-tight">Use AI triage before you book a visit.</h2>
+                <h2 className="mt-4 text-3xl font-black tracking-tight">Book care faster with direct access to doctors.</h2>
                 <p className="mt-3 max-w-2xl text-slate-300">
-                  Check symptoms, see urgency, and route yourself to the right specialty before scheduling a consultation or telemedicine session.
+                  Find the right doctor, schedule a consultation, and move into telemedicine when needed.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link to="/patient/ai-symptom-checker" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-400 px-5 py-3 font-black text-slate-950 hover:bg-teal-300 transition-colors">
-                  <Brain className="w-4 h-4" /> Open AI Checker
-                </Link>
-                <Link to="/doctor-dashboard/telemedicine" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 font-black text-white hover:bg-white/15 transition-colors">
-                  <Video className="w-4 h-4" /> Telemedicine
+                <Link to={telemedicinePath} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 font-black text-white hover:bg-white/15 transition-colors">
+                  <Video className="w-4 h-4" /> {telemedicineLabel}
                 </Link>
               </div>
             </div>
@@ -93,8 +104,7 @@ const Home = () => {
           <div className="rounded-3xl bg-white p-8 shadow-sm border border-teal-100">
             <h3 className="text-lg font-black text-slate-900">What’s live now</h3>
             <div className="mt-5 space-y-4">
-              <FeatureRow title="AI Symptom Checker" text="Rule-based specialty routing plus LLM guidance." to="/patient/ai-symptom-checker" />
-              <FeatureRow title="Telemedicine Control Room" text="Create sessions, generate join tokens, and start calls." to="/doctor-dashboard/telemedicine" />
+              <FeatureRow title={telemedicineLabel} text="Create sessions, generate join tokens, and start calls." to={telemedicinePath} />
               <FeatureRow title="Doctor Booking Flow" text="Book an appointment and move to video consults." to="/doctors" />
             </div>
           </div>

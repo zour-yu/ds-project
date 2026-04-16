@@ -3,7 +3,7 @@ require("dotenv").config();
 const app = require("./app");
 const connectDB = require("./config/db");
 
-const PORT = process.env.PORT || 5006;
+const PORT = process.env.TELEMEDICINE_SERVICE_PORT || 5006;
 
 connectDB().then(() => {
   app.listen(PORT, () => {

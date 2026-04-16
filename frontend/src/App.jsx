@@ -12,7 +12,6 @@ import PatientProfile from "./patient/pages/PatientProfile";
 import PatientDashboard from "./patient/pages/PatientDashboard";
 import MedicalRecords from "./patient/pages/MedicalRecords";
 import Prescriptions from "./patient/pages/Prescriptions";
-import AISymptomChecker from "./patient/pages/AISymptomChecker";
 import DoctorDashboard from "./doctor/pages/DoctorDashboard";
 import ProfilePage from "./doctor/pages/ProfilePage";
 import AvailabilityPage from "./doctor/pages/AvailabilityPage";
@@ -104,17 +103,6 @@ function App() {
             <PrivateRoute allowedRole="patient">
               <PatientManagementLayout>
                 <Prescriptions />
-              </PatientManagementLayout>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/patient/ai-symptom-checker"
-          element={
-            <PrivateRoute allowedRole="patient">
-              <PatientManagementLayout>
-                <AISymptomChecker />
               </PatientManagementLayout>
             </PrivateRoute>
           }

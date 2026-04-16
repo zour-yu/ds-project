@@ -1,7 +1,21 @@
 import axios from "axios";
+import { auth } from "../../config/firebase";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_TELEMEDICINE_API || "http://localhost:5006/api/telemedicine"
+});
+
+API.interceptors.request.use(async (config) => {
+  try {
+    if (auth.currentUser) {
+      const token = await auth.currentUser.getIdToken();
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.error("Error getting telemedicine token:", error);
+  }
+
+  return config;
 });
 
 export const createSession = async (payload) => {
