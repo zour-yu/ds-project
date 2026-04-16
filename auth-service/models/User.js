@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema({
       // Patients and Admins are approved by default
       return this.role === 'doctor' ? 'pending' : 'approved';
     }
+  },
+  activeStatus: {
+    type: String,
+    enum: ['Active', 'Suspended', 'Deleted'],
+    default: 'Active'
   }
 }, {
   timestamps: true

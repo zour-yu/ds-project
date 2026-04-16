@@ -21,34 +21,42 @@ import {
 const VerifyDoctors = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pendingDoctors, setPendingDoctors] = useState([]);
+  const [approvedCount, setApprovedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchPendingDoctors = async () => {
+  const fetchStats = async () => {
     try {
       setLoading(true);
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       
-      const response = await axios.get(`${import.meta.env.VITE_AUTH_API}/auth/admin/doctors/pending`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPendingDoctors(response.data);
+      const [resPending, resApproved] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_AUTH_API}/admin/doctors/pending`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_AUTH_API}/users/count?role=doctor&status=approved`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { count: 0 } }))
+      ]);
+      
+      setPendingDoctors(resPending.data);
+      setApprovedCount(resApproved.data.count || 0);
     } catch (error) {
-      console.error("Error fetching pending doctors:", error);
+      console.error("Error fetching verification data:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPendingDoctors();
+    fetchStats();
   }, []);
 
   const handleVerify = async (firebaseId) => {
     if (!window.confirm("Are you sure you want to approve this doctor?")) return;
     try {
       const token = await getAuth().currentUser.getIdToken();
-      await axios.patch(`${import.meta.env.VITE_AUTH_API}/auth/admin/doctors/${firebaseId}/verify`, {}, {
+      await axios.patch(`${import.meta.env.VITE_AUTH_API}/admin/doctors/${firebaseId}/verify`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingDoctors(prev => prev.filter(doc => doc.firebaseId !== firebaseId));
@@ -63,7 +71,7 @@ const VerifyDoctors = () => {
     if (!window.confirm("Are you sure you want to reject this doctor application?")) return;
     try {
       const token = await getAuth().currentUser.getIdToken();
-      await axios.patch(`${import.meta.env.VITE_AUTH_API}/auth/admin/doctors/${firebaseId}/reject`, {}, {
+      await axios.patch(`${import.meta.env.VITE_AUTH_API}/admin/doctors/${firebaseId}/reject`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingDoctors(prev => prev.filter(doc => doc.firebaseId !== firebaseId));
@@ -128,20 +136,20 @@ const VerifyDoctors = () => {
 
         <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Approved Today</span>
+            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Total Approved</span>
             <div className="p-2 rounded-xl bg-emerald-500 text-white">
               <UserCheck className="w-5 h-5" />
             </div>
           </div>
           <div className="flex items-end justify-between">
             <div>
-              <h3 className="text-3xl font-black text-slate-800">12</h3>
+              <h3 className="text-3xl font-black text-slate-800">{approvedCount}</h3>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-[10px] text-emerald-500 font-bold">+2 from yesterday</span>
+                <span className="text-[10px] text-emerald-500 font-bold">Verified Doctors</span>
               </div>
             </div>
             <div className="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 w-[75%] opacity-80"></div>
+              <div className="h-full bg-emerald-500 w-[100%] opacity-80"></div>
             </div>
           </div>
         </div>
@@ -171,10 +179,10 @@ const VerifyDoctors = () => {
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
+            <thead>{/*Table header*/}
               <tr className="bg-slate-50/50">
                 <th className="p-6 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Doctor Information</th>
-                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Credentials</th>
+                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Phone Number</th>
                 <th className="p-6 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-center">Actions</th>
               </tr>
             </thead>
@@ -207,10 +215,7 @@ const VerifyDoctors = () => {
                   </td>
                   <td className="p-6">
                     <div className="space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <Stethoscope className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="text-sm font-bold text-slate-700">{doc.specialty || 'General Practitioner'}</span>
-                      </div>
+                      
                       <div className="flex items-center gap-2">
                         <Phone className="w-3.5 h-3.5 text-slate-400" />
                         <span className="text-xs font-medium text-slate-500">{doc.phoneNumber || 'No phone provided'}</span>

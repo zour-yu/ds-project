@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { subscribeToAuthChanges } from "./auth/services/authService";
 import Register from "./auth/pages/Register";
 import Login from "./auth/pages/Login";
+import WaitingPage from "./auth/pages/WaitingPage";
 import MainLayout from "./layouts/MainLayout";
 import PatientManagementLayout from "./layouts/PatientManagementLayout";
 import Home from "./pages/Home";
@@ -26,17 +27,20 @@ import TelemedicineRoom from "./telemedicine/pages/TelemedicineRoom";
 import AdminManagementLayout from "./layouts/AdminManagementLayout";
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import VerifyDoctors from "./admin/pages/VerifyDoctors";
+import AdminDoctors from "./admin/pages/AdminDoctors";
 import AdminPatients from "./admin/pages/AdminPatients";
+import AdminSettings from "./admin/pages/AdminSettings";
 
 const PrivateRoute = ({ children, allowedRole }) => {
-  const [userState, setUserState] = useState({ loading: true, user: null, role: null });
+  const [userState, setUserState] = useState({ loading: true, user: null, role: null, verified: false });
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges((data) => {
       setUserState({
         loading: false,
         user: data?.user || null,
-        role: data?.role || null
+        role: data?.role || null,
+        verified: data?.role === 'doctor' ? data?.claims?.isVerified : true // All non-doctors are (effectively) verified
       });
     });
 
@@ -46,11 +50,17 @@ const PrivateRoute = ({ children, allowedRole }) => {
   if (userState.loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   if (!userState.user) return <Navigate to="/login" />;
   if (userState.loading) {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center font-bold text-slate-800 tracking-tight">HealthEase is loading...</div>;
   }
 
   if (!userState.user) {
     return <Navigate to="/login" />;
+  }
+
+  // Handle unverified doctors
+  if (userState.role === 'doctor' && !userState.verified) {
+    // Only allow visit waiting page or profile if we wanted, but let's force waiting page for now
+    return <Navigate to="/waiting" />;
   }
 
   if (allowedRole && userState.role && userState.role !== allowedRole) {
@@ -67,6 +77,7 @@ function App() {
         <Route path="/" element={<MainLayout><Home /></MainLayout>} />
         <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
         <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+        <Route path="/waiting" element={<WaitingPage />} />
         <Route path="/doctors" element={<MainLayout><DoctorList /></MainLayout>} />
         <Route path="/book/:id" element={<MainLayout><BookingPage /></MainLayout>} />
         <Route path="/payment" element={<MainLayout><PaymentPage /></MainLayout>} />
@@ -159,11 +170,33 @@ function App() {
         />
 
         <Route
+          path="/admin/doctors"
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminDoctors />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/admin/patients"
           element={
             <PrivateRoute allowedRole="admin">
               <AdminManagementLayout>
                 <AdminPatients />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings"
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminSettings />
               </AdminManagementLayout>
             </PrivateRoute>
           }

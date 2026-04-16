@@ -68,8 +68,61 @@ const rejectDoctor = async (req, res) => {
     }
 };
 
+// @route   GET /api/auth/admin/users
+// @desc    Get all users (with optional role filter)
+// @access  Private (Admin only)
+const getAllUsers = async (req, res) => {
+    try {
+        const { role } = req.query;
+        const query = role ? { role } : {};
+        const users = await User.find(query);
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// @route   PATCH /api/auth/admin/users/:firebaseId/status
+// @desc    Update user activeStatus (Active, Suspended, Deleted)
+// @access  Private (Admin only)
+const updateUserStatus = async (req, res) => {
+    try {
+        const { firebaseId } = req.params;
+        const { activeStatus } = req.body;
+
+        if (!['Active', 'Suspended', 'Deleted'].includes(activeStatus)) {
+            return res.status(400).json({ message: 'Invalid status' });
+        }
+
+        const user = await User.findOneAndUpdate(
+            { firebaseId },
+            { activeStatus },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Optional: If 'Deleted' or 'Suspended', you might want to disable them in Firebase Auth as well
+        if (activeStatus === 'Deleted' || activeStatus === 'Suspended') {
+            await admin.auth().updateUser(firebaseId, { disabled: true });
+        } else {
+            await admin.auth().updateUser(firebaseId, { disabled: false });
+        }
+
+        res.status(200).json({ message: `User status updated to ${activeStatus}`, user });
+    } catch (error) {
+        console.error("Error updating user status:", error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     getPendingDoctors,
     verifyDoctor,
-    rejectDoctor
+    rejectDoctor,
+    getAllUsers,
+    updateUserStatus
 };

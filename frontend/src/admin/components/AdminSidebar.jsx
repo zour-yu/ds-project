@@ -23,7 +23,7 @@ const AdminSidebar = () => {
     { name: 'Verify Doctors', path: '/admin/verify-doctors', icon: ShieldCheck },
     { name: 'Manage Patients', path: '/admin/patients', icon: Users },
     { name: 'Manage Doctors', path: '/admin/doctors', icon: UserCog },
-    { name: 'Reports Overview', path: '/admin/reports', icon: FileText },
+    { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   const handleLogout = async () => {

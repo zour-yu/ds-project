@@ -48,3 +48,42 @@ exports.confirmPayment = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.getWeeklyRevenue = async (req, res) => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const payments = await Payment.find({
+            status: "SUCCESS",
+            createdAt: { $gte: sevenDaysAgo }
+        }).sort({ createdAt: 1 });
+
+        // Group by day
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const weeklyData = {};
+        
+        // Initialize last 7 days including today
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dayName = days[date.getDay()];
+            weeklyData[dayName] = { name: dayName, revenue: 0, transactions: 0 };
+        }
+
+        payments.forEach(p => {
+            const dayName = days[new Date(p.createdAt).getDay()];
+            if (weeklyData[dayName]) {
+                weeklyData[dayName].revenue += p.amount;
+                weeklyData[dayName].transactions += 1;
+            }
+        });
+
+        const chartData = Object.values(weeklyData);
+        const totalProfit = chartData.reduce((acc, curr) => acc + curr.revenue, 0);
+
+        res.json({ chartData, totalProfit });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

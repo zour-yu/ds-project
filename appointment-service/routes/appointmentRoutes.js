@@ -8,6 +8,15 @@ router.post("/", verifyToken, upload.single("file"), controller.createAppointmen
 
 router.get("/patient/me", verifyToken, controller.getPatientAppointments);
 
+router.get("/count", async (req, res) => {
+    try {
+        const count = await require('../models/Appointment').countDocuments();
+        res.json({ count });
+    } catch (err) {
+        res.status(500).json({ message: 'Error' });
+    }
+});
+
 router.get("/doctor/:doctorId", controller.getDoctorAppointments);
 
 router.patch("/:id/status", controller.updateStatus);

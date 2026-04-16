@@ -46,7 +46,6 @@ const AdminTopNav = () => {
       case '/admin/dashboard': return 'Admin Dashboard';
       case '/admin/patients': return 'Manage Patients';
       case '/admin/doctors': return 'Manage Doctors';
-      case '/admin/reports': return 'Reports Overview';
       case '/admin/settings': return 'System Settings';
       default: return 'Overview';
     }
@@ -56,7 +55,6 @@ const AdminTopNav = () => {
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Manage Patients', path: '/admin/patients', icon: Users },
     { name: 'Manage Doctors', path: '/admin/doctors', icon: UserCog },
-    { name: 'Reports Overview', path: '/admin/reports', icon: FileText },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
