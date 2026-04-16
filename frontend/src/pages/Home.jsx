@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Brain, Video, ArrowRight, ShieldCheck, Stethoscope } from 'lucide-react';
 // IMPORTANT: Updated extension from .png to .jpg based on actual file existence
 import heroImage from '../assets/Home Clinic.jpg'; 
 
@@ -19,14 +20,24 @@ const Home = () => {
                 <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                   Experience wellness that feels like home. Book appointments easily, consult top-rated doctors, and manage your health journey in one beautiful space.
                 </p>
-                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                <div className="mt-5 sm:mt-8 flex flex-col sm:flex-row sm:justify-center lg:justify-start gap-3">
                   <div className="rounded-md shadow">
-                    <Link to="/doctors" className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 transition-colors md:py-4 md:text-lg md:px-10">
-                      Find a Doctor
+                    <Link to="/doctors" className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 transition-colors md:py-4 md:text-lg md:px-10">
+                      <Stethoscope className="w-4 h-4" /> Find a Doctor
                     </Link>
                   </div>
                   <div className="mt-3 sm:mt-0 sm:ml-3">
-                    <Link to="/register" className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 transition-colors md:py-4 md:text-lg md:px-10">
+                    <Link to="/patient/ai-symptom-checker" className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-slate-900 hover:bg-slate-800 transition-colors md:py-4 md:text-lg md:px-10">
+                      <Brain className="w-4 h-4" /> Try AI Symptom Checker
+                    </Link>
+                  </div>
+                  <div className="mt-3 sm:mt-0 sm:ml-3">
+                    <Link to="/doctor-dashboard/telemedicine" className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 transition-colors md:py-4 md:text-lg md:px-10">
+                      <Video className="w-4 h-4" /> Telemedicine
+                    </Link>
+                  </div>
+                  <div className="mt-3 sm:mt-0 sm:ml-3">
+                    <Link to="/register" className="w-full flex items-center justify-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 transition-colors md:py-4 md:text-lg md:px-10">
                       Join HealthEase
                     </Link>
                   </div>
@@ -54,22 +65,37 @@ const Home = () => {
         </div>
       </div>
 
-      {/* --- Other Sections we can add later --- */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-slate-900">What we can add next:</h2>
-          <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-slate-50 p-6 rounded-xl border border-teal-100">
-              <h3 className="text-lg font-bold text-teal-700">Features Outline</h3>
-              <p className="mt-2 text-gray-500">Showcase 3 main features (e.g., Simple Booking, Secure Records, Urgent Care).</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 rounded-3xl bg-slate-950 text-white p-8 shadow-2xl shadow-slate-200/40 overflow-hidden relative">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(45,212,191,0.2),_transparent_30%)]" />
+            <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-teal-200">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Fast access
+                </div>
+                <h2 className="mt-4 text-3xl font-black tracking-tight">Use AI triage before you book a visit.</h2>
+                <p className="mt-3 max-w-2xl text-slate-300">
+                  Check symptoms, see urgency, and route yourself to the right specialty before scheduling a consultation or telemedicine session.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link to="/patient/ai-symptom-checker" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-400 px-5 py-3 font-black text-slate-950 hover:bg-teal-300 transition-colors">
+                  <Brain className="w-4 h-4" /> Open AI Checker
+                </Link>
+                <Link to="/doctor-dashboard/telemedicine" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 font-black text-white hover:bg-white/15 transition-colors">
+                  <Video className="w-4 h-4" /> Telemedicine
+                </Link>
+              </div>
             </div>
-            <div className="bg-slate-50 p-6 rounded-xl border border-teal-100">
-              <h3 className="text-lg font-bold text-teal-700">Specialties List</h3>
-              <p className="mt-2 text-gray-500">A slider or grid of icons showing "Cardiology", "Dentistry", etc.</p>
-            </div>
-            <div className="bg-slate-50 p-6 rounded-xl border border-teal-100">
-              <h3 className="text-lg font-bold text-teal-700">Top Doctors</h3>
-              <p className="mt-2 text-gray-500">Mini profiles of 3 popular doctors available on your platform.</p>
+          </div>
+
+          <div className="rounded-3xl bg-white p-8 shadow-sm border border-teal-100">
+            <h3 className="text-lg font-black text-slate-900">What’s live now</h3>
+            <div className="mt-5 space-y-4">
+              <FeatureRow title="AI Symptom Checker" text="Rule-based specialty routing plus LLM guidance." to="/patient/ai-symptom-checker" />
+              <FeatureRow title="Telemedicine Control Room" text="Create sessions, generate join tokens, and start calls." to="/doctor-dashboard/telemedicine" />
+              <FeatureRow title="Doctor Booking Flow" text="Book an appointment and move to video consults." to="/doctors" />
             </div>
           </div>
         </div>
@@ -77,5 +103,17 @@ const Home = () => {
     </div>
   );
 };
+
+function FeatureRow({ title, text, to }) {
+  return (
+    <Link to={to} className="flex items-start justify-between gap-4 rounded-2xl bg-slate-50 p-4 border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors">
+      <div>
+        <p className="font-bold text-slate-900">{title}</p>
+        <p className="mt-1 text-sm text-slate-500 leading-6">{text}</p>
+      </div>
+      <ArrowRight className="w-4 h-4 text-teal-600 mt-1 flex-shrink-0" />
+    </Link>
+  );
+}
 
 export default Home;
