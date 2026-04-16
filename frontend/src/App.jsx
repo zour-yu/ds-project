@@ -72,6 +72,11 @@ function App() {
               <PatientManagementLayout>
                 <PatientProfile />
               </PatientManagementLayout>
+            </PrivateRoute>
+          }
+          />
+
+        <Route
           path="/doctor/*" 
           element={
             <PrivateRoute allowedRole="doctor">
