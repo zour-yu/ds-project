@@ -28,7 +28,12 @@ const Register = () => {
     try {
       const { email, password, name, role, phoneNumber, address } = formData;
       await register(email, password, name, role, { phoneNumber, address });
-      toast.success('Registration successful!');
+      
+      // LOG OUT immediately after registration to prevent auto-login
+      // This ensures they must go through the Login page to establish a fresh session with roles/claims
+      await logout();
+      
+      toast.success('Registration successful! Please sign in.');
       navigate('/login');
     } catch (error) {
       toast.error(error.message || 'Error occurred');

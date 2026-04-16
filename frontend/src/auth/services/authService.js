@@ -10,6 +10,20 @@ import { auth } from "../../config/firebase";
 
 const AUTH_API = import.meta.env.VITE_AUTH_API + "/auth";
 
+const resolveDoctorApiBase = () => {
+  const raw = import.meta.env.VITE_DOCTOR_API;
+  if (!raw) {
+    return "http://localhost:5002/api/doctors";
+  }
+
+  const trimmed = raw.replace(/\/$/, "");
+  if (trimmed.endsWith("/api")) {
+    return `${trimmed}/doctors`;
+  }
+
+  return trimmed;
+};
+
 /**
  * Register a new user:
  * 1. Create in Firebase
@@ -34,6 +48,24 @@ export const register = async (email, password, name, role = "patient", extraDat
 
     // 3. Force token refresh to include new custom claims
     await user.getIdToken(true);
+
+    // 4. Create doctor profile document so doctor listing can discover new doctors.
+    if (role === "doctor") {
+      const freshToken = await user.getIdToken();
+      await axios.post(
+        `${resolveDoctorApiBase()}/profile`,
+        {
+          name,
+          email,
+          phone: extraData.phoneNumber || "",
+          hospital: extraData.address || "",
+          specialty: "General"
+        },
+        {
+          headers: { Authorization: `Bearer ${freshToken}` }
+        }
+      );
+    }
 
     return { user, data: response.data };
   } catch (error) {
