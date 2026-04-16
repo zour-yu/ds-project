@@ -4,6 +4,8 @@ const appointmentSchema = new mongoose.Schema({
 
   name: String,
   age: Number,
+  email: String,
+  phone: String,
   symptoms: String,
   report: String,
   prescription: String,
