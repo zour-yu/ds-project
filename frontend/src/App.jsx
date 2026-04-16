@@ -5,6 +5,10 @@ import Register from "./auth/pages/Register";
 import Login from "./auth/pages/Login";
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
+import DoctorDashboard from "./doctor/pages/DoctorDashboard";
+import ProfilePage from "./doctor/pages/ProfilePage";
+import AvailabilityPage from "./doctor/pages/AvailabilityPage";
+import DoctorAppointments from "./doctor/pages/DoctorAppointments";
 
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
@@ -56,13 +60,17 @@ function App() {
         />
         
         <Route 
-          path="/doctor/home" 
+          path="/doctor/*" 
           element={
             <PrivateRoute allowedRole="doctor">
-              <DashboardPlaceholder title="Doctor Panel" />
+              <DoctorDashboard />
             </PrivateRoute>
-          } 
-        />
+          }
+        >
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="availability" element={<AvailabilityPage />} />
+          <Route path="appointments" element={<DoctorAppointments />} />
+        </Route>
 
         <Route 
           path="/admin/dashboard" 
