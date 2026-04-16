@@ -36,7 +36,7 @@ const getAllPatientProfiles = async (req, res) => {
                 email: user.email,
                 phone: user.phoneNumber || 'No phone',
                 address: user.address || 'No address',
-                status: 'Active' // You can add logic for this later
+                activeStatus: medicalProfile ? (medicalProfile.activeStatus || 'Active') : 'Active'
             };
         }));
 
@@ -86,8 +86,42 @@ const deletePatientProfile = async (req, res) => {
     }
 };
 
+// @route   PUT /api/patients/admin/:firebaseId
+// @desc    Update a patient's medical profile AND auth profile (Admin only)
+// @access  Private (Admin only)
+const updatePatientProfileByAdmin = async (req, res) => {
+    try {
+        const { firebaseId } = req.params;
+        const { name, phone, address, activeStatus } = req.body;
+
+        // 1. Update User info in Auth DB
+        await User.findOneAndUpdate(
+            { firebaseId },
+            { name, phoneNumber: phone, address },
+            { new: true }
+        );
+
+        // 2. Update Medical profile info (activeStatus) in Patient DB
+        // If profile doesn't exist yet, we still track the activeStatus
+        let medicalProfile = await Patient.findOneAndUpdate(
+            { firebaseId },
+            { activeStatus },
+            { new: true, upsert: true } // Upsert because admin might set status before patient fills profile
+        );
+
+        res.status(200).json({ 
+            message: 'User and medical profile updated successfully.',
+            profile: medicalProfile 
+        });
+    } catch (error) {
+        console.error("Error updating patient profile by admin:", error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     getAllPatientProfiles,
     getPatientProfileById,
-    deletePatientProfile
+    deletePatientProfile,
+    updatePatientProfileByAdmin
 };

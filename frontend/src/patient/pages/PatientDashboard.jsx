@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { subscribeToAuthChanges } from '../../auth/services/authService';
 import { 
   Calendar, 
@@ -10,7 +11,9 @@ import {
   Droplets,
   Plus,
   Search,
-  ChevronRight
+  ChevronRight,
+  Video,
+  ArrowRight
 } from 'lucide-react';
 
 const PatientDashboard = () => {
@@ -84,6 +87,21 @@ const PatientDashboard = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Link to="/doctors" className="rounded-[2rem] bg-white p-7 shadow-sm border border-slate-100 hover:border-teal-200 transition-colors group">
+          <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-teal-700">
+            <Video className="w-3.5 h-3.5" /> Telemedicine ready
+          </div>
+          <h2 className="mt-4 text-xl font-black text-slate-900">Prepare for a video consultation.</h2>
+          <p className="mt-2 text-sm text-slate-500 leading-6">
+            Find a doctor, book a slot, and your care team can move the visit to telemedicine when needed.
+          </p>
+          <div className="mt-5 inline-flex items-center gap-2 text-teal-600 font-bold text-sm">
+            Find a doctor <ArrowRight className="w-4 h-4" />
+          </div>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

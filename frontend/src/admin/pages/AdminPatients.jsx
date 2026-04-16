@@ -14,7 +14,11 @@ import {
   MoreVertical,
   ChevronLeft,
   ChevronRight,
-  Loader2
+  Loader2,
+  X,
+  Save,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 
 const AdminPatients = () => {
@@ -23,6 +27,11 @@ const AdminPatients = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const patientsPerPage = 10;
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPatient, setEditingPatient] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchPatients = async () => {
     try {
@@ -75,6 +84,51 @@ const AdminPatients = () => {
     } catch (error) {
       console.error("Error deleting patient:", error);
       alert("Failed to delete patient. Please try again.");
+    }
+  };
+
+  const handleEditClick = (patient) => {
+    setEditingPatient({
+      firebaseId: patient.firebaseId,
+      name: patient.name || '',
+      phone: patient.phone || '',
+      address: patient.address || '',
+      activeStatus: patient.activeStatus || 'Active',
+      email: patient.email // Read-only
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdatePatient = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      const auth = getAuth();
+      const token = await auth.currentUser.getIdToken();
+      
+      const response = await axios.put(`${import.meta.env.VITE_PATIENT_API}/admin/${editingPatient.firebaseId}`, {
+        name: editingPatient.name,
+        phone: editingPatient.phone,
+        address: editingPatient.address,
+        activeStatus: editingPatient.activeStatus
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Update local state
+      setPatients(prev => prev.map(p => 
+        p.firebaseId === editingPatient.firebaseId 
+          ? { ...p, ...editingPatient } 
+          : p
+      ));
+
+      setIsEditModalOpen(false);
+      alert("User updated successfully");
+    } catch (error) {
+      console.error("Error updating patient:", error);
+      alert("Failed to update patient.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -172,15 +226,16 @@ const AdminPatients = () => {
           </td>
           <td className="px-8 py-6">
             <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-              (patient.status || 'Active') === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+              (patient.activeStatus || 'Active') === 'Active' ? 'bg-emerald-100 text-emerald-700' : 
+              (patient.activeStatus === 'Suspended' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500')
             }`}>
-              {patient.status || 'Active'}
+              {patient.activeStatus || 'Active'}
             </span>
           </td>
           <td className="px-8 py-6">
             <div className="flex items-center justify-end gap-2">
               <button 
-                onClick={() => window.open(`/admin/patients/${patient.firebaseId}`, '_blank')}
+                onClick={() => handleEditClick(patient)}
                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
               >
                 <Edit className="w-4 h-4" />
@@ -240,6 +295,110 @@ const AdminPatients = () => {
     </button>
   </div>
 </div>
+      </div>
+
+      {/* Edit User Modal */}
+      <EditUserModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        patient={editingPatient}
+        setPatient={setEditingPatient}
+        onSave={handleUpdatePatient}
+        isUpdating={isUpdating}
+      />
+    </div>
+  );
+};
+
+// Edit Modal Component
+const EditUserModal = ({ isOpen, onClose, patient, setPatient, onSave, isUpdating }) => {
+  if (!isOpen || !patient) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
+        onClick={onClose} 
+      />
+      <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100">
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight">Edit Profile</h3>
+            <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all text-slate-400">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={onSave} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Primary ID)</label>
+              <input type="text" disabled value={patient.email} className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-400 opacity-70 cursor-not-allowed" />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-slate-800">Full Name</label>
+              <input 
+                type="text" 
+                required
+                value={patient.name} 
+                onChange={(e) => setPatient({...patient, name: e.target.value})}
+                className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:bg-white outline-none transition-all" 
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-slate-800">Phone</label>
+                <input 
+                  type="text" 
+                  value={patient.phone} 
+                  onChange={(e) => setPatient({...patient, phone: e.target.value})}
+                  className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:bg-white outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-slate-800">Account Status</label>
+                <select 
+                  value={patient.activeStatus}
+                  onChange={(e) => setPatient({...patient, activeStatus: e.target.value})}
+                  className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Suspended">Suspended</option>
+                  <option value="Deleted">Internal Flag (Hidden)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-slate-800">Home Address</label>
+              <textarea 
+                rows="3"
+                value={patient.address} 
+                onChange={(e) => setPatient({...patient, address: e.target.value})}
+                className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-700 focus:border-blue-500 focus:bg-white outline-none transition-all resize-none" 
+              />
+            </div>
+
+            <div className="pt-4 flex gap-3">
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="flex-1 px-6 py-4 bg-slate-50 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                disabled={isUpdating}
+                className="flex-[2] px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-75"
+              >
+                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {isUpdating ? 'Saving Changes...' : 'Save User Data'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

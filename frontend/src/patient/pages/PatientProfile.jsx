@@ -58,7 +58,7 @@ const PatientProfile = () => {
       });
       
       // 2. Fetch Basic info
-      const resAuth = await axios.get(`${import.meta.env.VITE_AUTH_API}/auth/me`, {
+      const resAuth = await axios.get(`${import.meta.env.VITE_AUTH_API}/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -90,7 +90,7 @@ const PatientProfile = () => {
       // If medical profile is 404, still load the auth data if possible
       if (error.response?.status === 404) {
         try {
-          const resAuth = await axios.get(`${import.meta.env.VITE_AUTH_API}/auth/me`, {
+          const resAuth = await axios.get(`${import.meta.env.VITE_AUTH_API}/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setProfile(prev => ({
@@ -136,7 +136,7 @@ const PatientProfile = () => {
       });
 
       // Update Basic Info (Name, Phone, Address) in auth-service
-      await axios.put(`${import.meta.env.VITE_AUTH_API}/auth/profile`, {
+      await axios.put(`${import.meta.env.VITE_AUTH_API}/profile`, {
         name: profile.name,
         phoneNumber: profile.phone,
         address: profile.address

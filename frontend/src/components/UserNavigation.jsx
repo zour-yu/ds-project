@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { subscribeToAuthChanges, logout } from '../auth/services/authService';
-import { User, LayoutDashboard, LogOut, ChevronDown, Bell } from 'lucide-react';
+import { User, LayoutDashboard, LogOut, ChevronDown, Bell, Calendar, FileText, Pill } from 'lucide-react';
 // IMPORTANT: Update this extension (.png, .svg) if your logo file is different
 import logo from '../assets/WebLogo.png';
 
@@ -15,7 +15,7 @@ const UserNavigation = () => {
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges(async (data) => {
-      setUser(data?.user || null);
+      setUser(data ? { ...data.user, role: data.role } : null);
       if (data?.user) {
         try {
           const token = await data.user.getIdToken();
@@ -48,29 +48,43 @@ const UserNavigation = () => {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    setShowDropdown(false);
-    navigate('/');
+    try {
+      await logout();
+      setShowDropdown(false);
+      navigate('/login'); // Redirect to login instead of home
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Find Doctors', path: '/doctors' },
-    { name: 'My Appointments', path: '/my-appointments' },
+    { name: 'My Appointments', path: '/patient/appointments' }, // Updated to correct route
   ];
+
+  const getLogoLink = () => {
+    // Both logged-out users and Patients should go to the public homepage
+    if (!user || user.role === 'patient') return '/';
+    if (user.role === 'admin') return '/admin/dashboard';
+    if (user.role === 'doctor') return '/doctor-dashboard/profile';
+    return '/';
+  };
 
   return (
     <nav className="bg-white border-b border-teal-50 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <img 
-              src={logo} 
-              alt="HealthEase Logo" 
-              className="h-10 w-auto mr-3 object-contain" 
-              onError={(e) => e.target.style.display = 'none'} 
-            />
-            <span className="text-2xl font-bold text-teal-600 hidden sm:block tracking-tight">HealthEase</span>
+            <Link to={getLogoLink()} className="flex items-center hover:opacity-80 transition-opacity">
+              <img 
+                src={logo} 
+                alt="HealthEase Logo" 
+                className="h-10 w-auto mr-3 object-contain" 
+                onError={(e) => e.target.style.display = 'none'} 
+              />
+              <span className="text-2xl font-bold text-teal-600 hidden sm:block tracking-tight">HealthEase</span>
+            </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
               {navItems.map((item) => (
                 <NavLink
@@ -90,11 +104,6 @@ const UserNavigation = () => {
             </div>
           </div>
           <div className="flex items-center space-x-5">
-            <button className="relative p-2 text-gray-400 hover:text-teal-600 transition-colors rounded-full hover:bg-teal-50">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button 
@@ -122,6 +131,13 @@ const UserNavigation = () => {
                       <p className="text-xs text-slate-400 font-medium truncate">{user.email}</p>
                     </div>
                     <Link 
+                      to="/patient/dashboard" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
+                    >
+                      <LayoutDashboard className="w-4 h-4 mr-3 text-teal-500" /> Dashboard
+                    </Link>
+                    <Link 
                       to="/patient/profile" 
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
@@ -129,11 +145,25 @@ const UserNavigation = () => {
                       <User className="w-4 h-4 mr-3 text-teal-500" /> My Profile
                     </Link>
                     <Link 
-                      to="/patient/dashboard" 
+                      to="/patient/appointments" 
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
                     >
-                      <LayoutDashboard className="w-4 h-4 mr-3 text-teal-500" /> Dashboard
+                      <Calendar className="w-4 h-4 mr-3 text-teal-500" /> Appointments
+                    </Link>
+                    <Link 
+                      to="/patient/records" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
+                    >
+                      <FileText className="w-4 h-4 mr-3 text-teal-500" /> Medical Records
+                    </Link>
+                    <Link 
+                      to="/patient/prescriptions" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
+                    >
+                      <Pill className="w-4 h-4 mr-3 text-teal-500" /> Prescriptions
                     </Link>
                     <div className="border-t border-slate-100 mt-1.5 pt-1.5">
                       <button 

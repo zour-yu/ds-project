@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { Video, LogOut } from "lucide-react";
 import { logout } from "../../auth/services/authService";
 
 export default function Sidebar() {
@@ -26,6 +26,10 @@ export default function Sidebar() {
         </Link>
         <Link to="/doctor-dashboard/appointments" className="hover:underline">
           Appointments
+        </Link>
+
+        <Link to="/doctor-dashboard/telemedicine" className="hover:underline flex items-center gap-2">
+          <Video className="w-4 h-4" /> Telemedicine
         </Link>
       </nav>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { subscribeToAuthChanges, logout } from "./auth/services/authService";
+import { subscribeToAuthChanges } from "./auth/services/authService";
 import Register from "./auth/pages/Register";
 import Login from "./auth/pages/Login";
 import MainLayout from "./layouts/MainLayout";
@@ -16,9 +16,11 @@ import DoctorDashboard from "./doctor/pages/DoctorDashboard";
 import ProfilePage from "./doctor/pages/ProfilePage";
 import AvailabilityPage from "./doctor/pages/AvailabilityPage";
 import DoctorAppointments from "./doctor/pages/DoctorAppointments";
+import TelemedicinePage from "./doctor/pages/TelemedicinePage";
 import DoctorList from "./doctor/pages/DoctorList";
 import DoctorDetails from "./doctor/pages/DoctorDetails";
 import BookingPage from "./doctor/pages/BookingPage";
+import TelemedicineRoom from "./telemedicine/pages/TelemedicineRoom";
 
 import AdminManagementLayout from "./layouts/AdminManagementLayout";
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -30,21 +32,27 @@ const PrivateRoute = ({ children, allowedRole }) => {
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges((data) => {
-      console.log("Auth State Changed:", data);
       setUserState({
         loading: false,
         user: data?.user || null,
         role: data?.role || null
       });
     });
+
     return () => unsub();
   }, []);
 
   if (userState.loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   if (!userState.user) return <Navigate to="/login" />;
+  if (userState.loading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  }
+
+  if (!userState.user) {
+    return <Navigate to="/login" />;
+  }
 
   if (allowedRole && userState.role && userState.role !== allowedRole) {
-    console.warn(`Role mismatch: expected ${allowedRole}, got ${userState.role}`);
     return <Navigate to="/" />;
   }
 
@@ -62,6 +70,7 @@ function App() {
         <Route path="/book/:id" element={<MainLayout><BookingPage /></MainLayout>} />
         <Route path="/payment" element={<MainLayout><PaymentPage /></MainLayout>} />
         <Route path="/payment-success" element={<MainLayout><PaymentSuccess /></MainLayout>} />
+
         <Route
           path="/patient/dashboard"
           element={
@@ -85,19 +94,6 @@ function App() {
         />
 
         <Route
-          path="/doctor/*"
-          element={
-            <PrivateRoute allowedRole="doctor">
-              <DoctorDashboard />
-            </PrivateRoute>
-          }
-        >
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="availability" element={<AvailabilityPage />} />
-          <Route path="appointments" element={<DoctorAppointments />} />
-        </Route>
-
-        <Route
           path="/patient/records"
           element={
             <PrivateRoute allowedRole="patient">
@@ -115,15 +111,6 @@ function App() {
               <PatientManagementLayout>
                 <Prescriptions />
               </PatientManagementLayout>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/doctor/home"
-          element={
-            <PrivateRoute allowedRole="doctor">
-              <div className="p-8">Doctor Dashboard (Coming Soon)</div>
             </PrivateRoute>
           }
         />
@@ -169,10 +156,22 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route path="profile" element={<MainLayout><ProfilePage /></MainLayout>} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="availability" element={<AvailabilityPage />} />
           <Route path="appointments" element={<DoctorAppointments />} />
+          <Route path="telemedicine" element={<TelemedicinePage />} />
         </Route>
+
+        <Route
+          path="/telemedicine/:id"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <TelemedicineRoom />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
 
         <Route path="/doctor/:id" element={<MainLayout><DoctorDetails /></MainLayout>} />
 

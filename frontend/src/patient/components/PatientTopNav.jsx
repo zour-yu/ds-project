@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { subscribeToAuthChanges, logout } from '../../auth/services/authService';
 import { ChevronDown, User, LayoutDashboard, Calendar, FileText, Pill, LogOut, Bell } from 'lucide-react';
 
@@ -14,7 +14,7 @@ const PatientTopNav = () => {
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges(async (data) => {
-      setUser(data?.user || null);
+      setUser(data ? { ...data.user, role: data.role } : null);
       if (data?.user) {
         try {
           const token = await data.user.getIdToken();
@@ -67,8 +67,9 @@ const PatientTopNav = () => {
   };
 
   const menuItems = [
-    { name: 'My Profile', path: '/patient/profile', icon: User },
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
+    { name: 'My Profile', path: '/patient/profile', icon: User },
+    
     { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
     { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
@@ -76,8 +77,14 @@ const PatientTopNav = () => {
 
   return (
     <header className="h-16 bg-white border-b border-teal-50 flex items-center justify-between px-6 fixed top-0 right-0 left-0 md:left-64 z-[50] transition-all duration-300">
-      {/* Left side - Page Title */}
+      {/* Left side - Home Link / Page Title */}
       <div className="flex items-center flex-1">
+        <Link 
+          to="/" 
+          className="mr-4 p-2 hover:bg-teal-50 rounded-xl transition-colors md:hidden"
+        >
+          <span className="text-xl font-black text-teal-600 tracking-tight">H</span>
+        </Link>
         <h2 className="text-lg font-black text-slate-800 tracking-tight">
           {getPageTitle()}
         </h2>
@@ -85,11 +92,6 @@ const PatientTopNav = () => {
 
       {/* Right side - Profile & Notifications */}
       <div className="flex items-center space-x-6">
-        <button className="relative p-2 text-gray-400 hover:text-teal-600 transition-colors rounded-full hover:bg-teal-50">
-          <Bell className="w-6 h-6" />
-          <span className="absolute top-2 right-2.5 h-2.5 w-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
-        </button>
-
         {/* Profile Dropdown Container */}
         <div className="relative" ref={dropdownRef}>
           <button 
