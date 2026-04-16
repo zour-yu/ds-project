@@ -6,14 +6,16 @@ export default function Sidebar() {
       <h2 className="text-2xl font-bold mb-6">Doctor Panel</h2>
 
       <nav className="flex flex-col gap-4">
-        <Link to="/dashboard/profile" className="hover:underline">
+        <Link to="/doctor-dashboard/profile" className="hover:underline">
           Profile
         </Link>
 
-        <Link to="/dashboard/availability" className="hover:underline">
+        <Link to="/doctor-dashboard/availability" className="hover:underline">
           Availability
         </Link>
-        <Link to="/dashboard/appointments">Appointments</Link>
+        <Link to="/doctor-dashboard/appointments" className="hover:underline">
+          Appointments
+        </Link>
       </nav>
     </div>
   );

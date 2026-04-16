@@ -10,82 +10,108 @@ export default function DoctorDetails() {
   const [availability, setAvailability] = useState([]);
 
   useEffect(() => {
-    API.get(`/doctors/${id}`).then(res => setDoctor(res.data));
+    API.get(`/${id}`).then(res => setDoctor(res.data));
 
-    API.get(`/doctors/${id}/availability`)
+    API.get(`/${id}/availability`)
       .then(res => setAvailability(res.data.availability));
   }, [id]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-100 p-6">
 
-      {/* PROFILE CARD */}
-      <div className="bg-white p-6 rounded-xl shadow mb-6 flex gap-6">
-        
-        <img
-          src={doctor?.profilePicture || "https://via.placeholder.com/120"}
-          className="w-32 h-32 rounded-full"
-        />
+      <div className="max-w-5xl mx-auto">
 
-        <div>
-          <h2 className="text-2xl font-bold">{doctor?.name}</h2>
-          <p className="text-blue-600">{doctor?.specialty}</p>
+        {/* 🔹 PROFILE HEADER */}
+        <div className="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row gap-6">
+          
+          {/* Image */}
+          <div className="flex justify-center md:block">
+            <img
+              src="https://img.freepik.com/premium-vector/user-profile-icon-circle_1256048-12499.jpg?semt=ais_hybrid&w=740&q=80"
+              className="w-32 h-32 rounded-full border-4 border-blue-100"
+            />
+          </div>
 
-          <p className="mt-2 text-gray-600">
-            {doctor?.qualifications?.join(", ")}
-          </p>
+          {/* Info */}
+          <div className="flex-1 text-center md:text-left">
+            <h2 className="text-2xl font-bold text-gray-800">
+              {doctor?.name}
+            </h2>
 
-          <p className="mt-1">
-            🏥 {doctor?.hospital}
-          </p>
+            <p className="text-blue-500 mt-1">
+              {doctor?.specialty}
+            </p>
 
-          <p className="mt-1">
-            ⏳ {doctor?.experience} years experience
-          </p>
+            <p className="text-gray-600 mt-2">
+              {doctor?.qualifications?.join(", ")}
+            </p>
 
-          <p className="mt-1 font-bold">
-            💰 Rs. {doctor?.consultationFee}
-          </p>
-        </div>
-      </div>
+            <div className="flex flex-wrap gap-4 mt-3 justify-center md:justify-start">
+              <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                🏥 {doctor?.hospital}
+              </span>
 
-      {/* BIO */}
-      <div className="bg-white p-4 rounded shadow mb-6">
-        <h3 className="font-bold mb-2">About Doctor</h3>
-        <p className="text-gray-600">{doctor?.bio}</p>
-      </div>
+              <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                ⏳ {doctor?.experience} yrs exp
+              </span>
 
-      {/* AVAILABILITY */}
-      <div className="bg-white p-4 rounded shadow">
-        <h3 className="font-bold mb-4">Available Slots</h3>
-
-        {availability.map(day => (
-          <div key={day.date} className="mb-4">
-
-            <h4 className="font-semibold text-gray-700">{day.date}</h4>
-
-            <div className="flex flex-wrap gap-2 mt-2">
-              {day.slots.map(slot => (
-                <button
-                  key={slot.time}
-                  disabled={slot.isBooked}
-                  onClick={() =>
-                    navigate(`/book/${id}`, {
-                      state: { date: day.date, time: slot.time }
-                    })
-                  }
-                  className={`px-3 py-1 rounded ${
-                    slot.isBooked
-                      ? "bg-gray-400 text-white cursor-not-allowed"
-                      : "bg-green-200 hover:bg-green-300"
-                  }`}
-                >
-                  {slot.time}
-                </button>
-              ))}
+              <span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-semibold">
+                💰 Rs. {doctor?.consultationFee}
+              </span>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* 🔹 BIO */}
+        <div className="bg-white rounded-2xl shadow p-5 mt-6">
+          <h3 className="font-bold text-lg mb-2">About Doctor</h3>
+          <p className="text-gray-600">
+            {doctor?.bio || "No bio available"}
+          </p>
+        </div>
+
+        {/* 🔹 AVAILABILITY */}
+        <div className="bg-white rounded-2xl shadow p-5 mt-6">
+          <h3 className="font-bold text-lg mb-4">Available Time Slots</h3>
+
+          {availability.length === 0 && (
+            <p className="text-gray-500">No availability set</p>
+          )}
+
+          {availability.map(day => (
+            <div key={day.date} className="mb-5">
+
+              {/* Date */}
+              <h4 className="text-gray-700 font-semibold">
+                📅 {day.date}
+              </h4>
+
+              {/* Slots */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {day.slots.map(slot => (
+                  <button
+                    key={slot.time}
+                    disabled={slot.isBooked}
+                    onClick={() =>
+                      navigate(`/book/${id}`, {
+                        state: { date: day.date, time: slot.time }
+                      })
+                    }
+                    className={`px-3 py-1 rounded-lg text-sm transition ${
+                      slot.isBooked
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-green-200 text-green-700 hover:bg-green-200"
+                    }`}
+                  >
+                    {slot.time}
+                  </button>
+                ))}
+              </div>
+
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );
