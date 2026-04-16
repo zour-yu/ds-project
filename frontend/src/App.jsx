@@ -5,6 +5,8 @@ import Register from "./auth/pages/Register";
 import Login from "./auth/pages/Login";
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
+import PaymentPage from "./payment/PaymentPage";
+import PaymentSuccess from "./payment/PaymentSuccess";
 
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
@@ -45,35 +47,40 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-        
-        <Route 
-          path="/patient/dashboard" 
-          element={
-            <PrivateRoute allowedRole="patient">
-              <DashboardPlaceholder title="Patient Dashboard" />
-            </PrivateRoute>
-          } 
-        />
-        
-        <Route 
-          path="/doctor/home" 
-          element={
-            <PrivateRoute allowedRole="doctor">
-              <DashboardPlaceholder title="Doctor Panel" />
-            </PrivateRoute>
-          } 
-        />
 
-        <Route 
-          path="/admin/dashboard" 
-          element={
-            <PrivateRoute allowedRole="admin">
-              <DashboardPlaceholder title="Admin Console" />
-            </PrivateRoute>
-          } 
-        />
+          <Route
+            path="/patient/dashboard"
+            element={
+              <PrivateRoute allowedRole="patient">
+                <DashboardPlaceholder title="Patient Dashboard" />
+              </PrivateRoute>
+            }
+          />
 
-        <Route path="/" element={<Navigate to="/login" />} />
+          <Route
+            path="/doctor/home"
+            element={
+              <PrivateRoute allowedRole="doctor">
+                <DashboardPlaceholder title="Doctor Panel" />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute allowedRole="admin">
+                <DashboardPlaceholder title="Admin Console" />
+              </PrivateRoute>
+            }
+          />
+
+          <Route path="/" element={<Navigate to="/login" />} />
+
+          <Route path="/payment" element={<PaymentPage />} />
+
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+
         </Routes>
       </MainLayout>
     </Router>
