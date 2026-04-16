@@ -28,11 +28,16 @@ export default function DoctorAppointments() {
   }, []);
 
   const updateStatus = async (id, status) => {
-    await API.patch(
-       `${import.meta.env.VITE_APPOINTMENT_API}/appointments/${id}/status`,
-      { status }
-    );
-    fetchData();
+    try {
+      await API.patch(
+        `${import.meta.env.VITE_APPOINTMENT_API}/appointments/${id}/status`,
+        { status }
+      );
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || err.message || "Failed to update appointment status");
+    }
   };
 
   return (
@@ -52,8 +57,9 @@ export default function DoctorAppointments() {
 
           {a.report && (
             <a
-              href={`http://localhost:5002/uploads/${a.report}`}
+              href={`${import.meta.env.VITE_APPOINTMENT_API.replace(/\/api$/, "")}/uploads/${a.report}`}
               target="_blank"
+              rel="noreferrer"
               className="text-blue-500"
             >
               View Report
@@ -64,14 +70,14 @@ export default function DoctorAppointments() {
 
           <div className="mt-2">
             <button
-              onClick={() => updateStatus(a._id, "approved")}
+              onClick={() => updateStatus(a._id, "CONFIRMED")}
               className="bg-green-500 text-white px-3 py-1 mr-2"
             >
               Approve
             </button>
 
             <button
-              onClick={() => updateStatus(a._id, "rejected")}
+              onClick={() => updateStatus(a._id, "REJECTED")}
               className="bg-red-500 text-white px-3 py-1"
             >
               Reject

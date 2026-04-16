@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
 const jitsiDomain = import.meta.env.VITE_JITSI_DOMAIN || "meet.jit.si";
+const jitsiProtocol = import.meta.env.VITE_JITSI_PROTOCOL || "https";
 
 const JitsiMeetComponent = ({ roomName, userDisplayName, jwt, onClose, onReady }) => {
   const containerRef = useRef(null);
@@ -12,7 +13,7 @@ const JitsiMeetComponent = ({ roomName, userDisplayName, jwt, onClose, onReady }
       if (!window.JitsiMeetExternalAPI) {
         // Load Jitsi SDK from CDN
         const script = document.createElement("script");
-        script.src = `https://${jitsiDomain}/external_api.js`;
+        script.src = `${jitsiProtocol}://${jitsiDomain}/external_api.js`;
         script.async = true;
         script.onload = () => startConference();
         script.onerror = () => {
@@ -43,13 +44,15 @@ const JitsiMeetComponent = ({ roomName, userDisplayName, jwt, onClose, onReady }
           enableWelcomePage: true,
           useStunTurn: true,
           prejoinPageEnabled: false,
-          chromeExtensionBanner: null
+          chromeExtensionBanner: null,
+          disableThirdPartyRequests: true
         },
         interfaceConfigOverwrite: {
           DEFAULT_LANGUAGE: "en",
           SHOW_JITSI_WATERMARK: false,
           MOBILE_APP_PROMO: false,
           HIDE_INVITE_MORE_HEADER: false,
+          DEFAULT_REMOTE_DISPLAY_NAME: "Participant",
           TOOLBAR_BUTTONS: [
             "microphone",
             "camera",
