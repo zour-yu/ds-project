@@ -1,10 +1,11 @@
 {
-  "name": "notification-service",
+  "name": "payment-service",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
@@ -12,10 +13,11 @@
   "description": "",
   "dependencies": {
     "axios": "^1.15.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "nodemailer": "^8.0.5",
-    "twilio": "^5.13.1"
+    "mongoose": "^9.4.1",
+    "stripe": "^22.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

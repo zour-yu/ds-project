@@ -10,9 +10,9 @@ export default function DoctorDetails() {
   const [availability, setAvailability] = useState([]);
 
   useEffect(() => {
-    API.get(`/doctors/${id}`).then(res => setDoctor(res.data));
+    API.get(`/${id}`).then(res => setDoctor(res.data));
 
-    API.get(`/doctors/${id}/availability`)
+    API.get(`/${id}/availability`)
       .then(res => setAvailability(res.data.availability));
   }, [id]);
 

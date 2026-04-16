@@ -6,6 +6,8 @@ import Login from "./auth/pages/Login";
 import MainLayout from "./layouts/MainLayout";
 import PatientManagementLayout from "./layouts/PatientManagementLayout";
 import Home from "./pages/Home";
+import PaymentPage from "./payment/PaymentPage";
+import PaymentSuccess from "./payment/PaymentSuccess";
 import PatientProfile from "./patient/pages/PatientProfile";
 import PatientDashboard from "./patient/pages/PatientDashboard";
 import MedicalRecords from "./patient/pages/MedicalRecords";
@@ -14,6 +16,9 @@ import DoctorDashboard from "./doctor/pages/DoctorDashboard";
 import ProfilePage from "./doctor/pages/ProfilePage";
 import AvailabilityPage from "./doctor/pages/AvailabilityPage";
 import DoctorAppointments from "./doctor/pages/DoctorAppointments";
+import DoctorList from "./doctor/pages/DoctorList";
+import DoctorDetails from "./doctor/pages/DoctorDetails";
+import BookingPage from "./doctor/pages/BookingPage";
 
 import AdminManagementLayout from "./layouts/AdminManagementLayout";
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -53,6 +58,8 @@ function App() {
         <Route path="/" element={<MainLayout><Home /></MainLayout>} />
         <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
         <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+        <Route path="/doctors" element={<MainLayout><DoctorList /></MainLayout>} />
+        <Route path="/book/:id" element={<MainLayout><BookingPage /></MainLayout>} />
         
         <Route 
           path="/patient/dashboard" 
@@ -152,6 +159,21 @@ function App() {
             </PrivateRoute>
           } 
         />
+        
+        <Route 
+          path="/doctor-dashboard/*" 
+          element={
+            <PrivateRoute allowedRole="doctor">
+              <DoctorDashboard />
+            </PrivateRoute>
+          }
+        >
+          <Route path="profile" element={<MainLayout><ProfilePage />} />
+          <Route path="availability" element={<AvailabilityPage />} />
+          <Route path="appointments" element={<DoctorAppointments />} />
+        </Route>
+
+          <Route path="/doctor/:id" element={<MainLayout><DoctorDetails /></MainLayout>} />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

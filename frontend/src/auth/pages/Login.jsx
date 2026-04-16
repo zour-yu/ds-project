@@ -16,7 +16,7 @@ const Login = () => {
         try {
             const { role } = await login(email, password);
             toast.success('Login successful!');
-            if (role === 'doctor') navigate('/doctor/home');
+            if (role === 'doctor') navigate('/doctor-dashboard/profile');
             else if (role === 'admin') navigate('/admin/dashboard');
             else navigate('/patient/dashboard');
         } catch (error) {
