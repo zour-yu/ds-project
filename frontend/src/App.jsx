@@ -28,6 +28,7 @@ import AdminDashboard from "./admin/pages/AdminDashboard";
 import VerifyDoctors from "./admin/pages/VerifyDoctors";
 import AdminDoctors from "./admin/pages/AdminDoctors";
 import AdminPatients from "./admin/pages/AdminPatients";
+import AdminSettings from "./admin/pages/AdminSettings";
 
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null, verified: false });
@@ -164,6 +165,17 @@ function App() {
             <PrivateRoute allowedRole="admin">
               <AdminManagementLayout>
                 <AdminPatients />
+              </AdminManagementLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings"
+          element={
+            <PrivateRoute allowedRole="admin">
+              <AdminManagementLayout>
+                <AdminSettings />
               </AdminManagementLayout>
             </PrivateRoute>
           }

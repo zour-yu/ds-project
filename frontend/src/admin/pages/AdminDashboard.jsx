@@ -41,17 +41,16 @@ const AdminDashboard = () => {
   });
   const [recentUsers, setRecentUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Dummy Financial Data for Chart
-  const financialData = [
-    { name: 'Mon', revenue: 4200, transactions: 12 },
-    { name: 'Tue', revenue: 3800, transactions: 15 },
-    { name: 'Wed', revenue: 5400, transactions: 18 },
-    { name: 'Thu', revenue: 4700, transactions: 14 },
-    { name: 'Fri', revenue: 6100, transactions: 22 },
-    { name: 'Sat', revenue: 3200, transactions: 10 },
-    { name: 'Sun', revenue: 2800, transactions: 8 },
-  ];
+  const [financialData, setFinancialData] = useState([
+    { name: 'Mon', revenue: 0, transactions: 0 },
+    { name: 'Tue', revenue: 0, transactions: 0 },
+    { name: 'Wed', revenue: 0, transactions: 0 },
+    { name: 'Thu', revenue: 0, transactions: 0 },
+    { name: 'Fri', revenue: 0, transactions: 0 },
+    { name: 'Sat', revenue: 0, transactions: 0 },
+    { name: 'Sun', revenue: 0, transactions: 0 },
+  ]);
+  const [totalProfit, setTotalProfit] = useState(0);
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges((data) => {
@@ -68,12 +67,13 @@ const AdminDashboard = () => {
         if (!token) return;
 
         // Fetch stats and recent users
-        const [resPatients, resDoctors, resPending, resAppointments, resUsers] = await Promise.all([
+        const [resPatients, resDoctors, resPending, resAppointments, resUsers, resFinance] = await Promise.all([
           axios.get(`${import.meta.env.VITE_AUTH_API}/users/count?role=patient`, { headers: { Authorization: `Bearer ${token}` } }),
           axios.get(`${import.meta.env.VITE_AUTH_API}/users/count?role=doctor`, { headers: { Authorization: `Bearer ${token}` } }),
           axios.get(`${import.meta.env.VITE_AUTH_API}/users/count?role=doctor&activeStatus=Pending`, { headers: { Authorization: `Bearer ${token}` } }),
           axios.get(`${import.meta.env.VITE_APPOINTMENT_API}/count`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${import.meta.env.VITE_AUTH_API}/admin/users`, { headers: { Authorization: `Bearer ${token}` } })
+          axios.get(`${import.meta.env.VITE_AUTH_API}/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${import.meta.env.VITE_PAYMENT_API}/stats/weekly`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         setCounts({
@@ -82,6 +82,11 @@ const AdminDashboard = () => {
           appointments: resAppointments.data.count || 0,
           pendingDoctors: resPending.data.count || 0
         });
+
+        if (resFinance.data) {
+          setFinancialData(resFinance.data.chartData);
+          setTotalProfit(resFinance.data.totalProfit);
+        }
 
         // Get latest 4 users
         if (Array.isArray(resUsers.data)) {
@@ -166,14 +171,14 @@ const AdminDashboard = () => {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tighter italic">Financial Overview</h2>
-              </div>
-              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Weekly Revenue Analysis (Estimated)</p>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Financial Overview</h2>
             </div>
-            <div className="flex items-center gap-4 p-2 bg-slate-50 rounded-2xl border border-slate-100">
-               <div className="text-right px-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Profit</p>
-                  <p className="text-xl font-black text-slate-900 italic tracking-tight">$30,200</p>
+            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Weekly Revenue Analysis (Live)</p>
+          </div>
+          <div className="flex items-center gap-4 p-2 bg-slate-50 rounded-2xl border border-slate-100">
+             <div className="text-right px-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Profit</p>
+                <p className="text-xl font-black text-slate-900 tracking-tight">{formatCurrency(totalProfit)}</p>
                </div>
                <div className="h-8 w-px bg-slate-200"></div>
                <button className="p-3 bg-white text-blue-600 rounded-xl shadow-xs border border-slate-100 hover:bg-blue-600 hover:text-white transition-all">
@@ -234,7 +239,7 @@ const AdminDashboard = () => {
             <div className="relative">
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h2 className="text-2xl font-black italic tracking-tighter">Recent Registrations</h2>
+                  <h2 className="text-2xl font-black tracking-tighter">Recent Registrations</h2>
                   <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px]">Latest verified accounts</p>
                 </div>
                 <Users className="w-6 h-6 text-blue-500" />
@@ -243,13 +248,13 @@ const AdminDashboard = () => {
               <div className="space-y-6">
                 {recentUsers.length === 0 ? (
                   <div className="text-center py-10 opacity-50">
-                    <p className="text-xs font-bold uppercase tracking-widest italic">No recent activity</p>
+                    <p className="text-xs font-bold uppercase tracking-widest">No recent activity</p>
                   </div>
                 ) : (
                   recentUsers.map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-4 bg-slate-800/40 rounded-3xl hover:bg-slate-800/80 transition-all border border-slate-800 backdrop-blur-sm">
                       <div className="flex items-center gap-4">
-                        <div className={`h-10 w-10 rounded-2xl flex items-center justify-center font-black italic text-xs
+                        <div className={`h-10 w-10 rounded-2xl flex items-center justify-center font-black text-xs
                           ${item.role === 'doctor' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>
                           {item.name?.substring(0, 1) || 'U'}
                         </div>
@@ -261,7 +266,7 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="text-[10px] font-black text-slate-600 uppercase italic">
+                      <div className="text-[10px] font-black text-slate-600 uppercase">
                         {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                       </div>
                     </div>
@@ -278,7 +283,7 @@ const AdminDashboard = () => {
           <div className="bg-blue-600 rounded-[2.5rem] p-8 text-white flex items-center justify-between shadow-xl shadow-blue-100">
              <div>
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">System Status</p>
-                <h3 className="text-xl font-black italic tracking-tighter">All Nodes Active</h3>
+                <h3 className="text-xl font-black tracking-tighter">All Nodes Active</h3>
              </div>
              <div className="h-12 w-12 rounded-full border-4 border-white/20 flex items-center justify-center bg-white/10 group">
                 <ShieldCheck className="w-6 h-6 animate-pulse" />

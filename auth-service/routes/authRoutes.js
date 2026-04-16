@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, getUserProfile, updateUserProfile } = require('../controllers/authController');
+const { registerUser, getUserProfile, updateUserProfile, deleteAccount } = require('../controllers/authController');
 const { getPendingDoctors, verifyDoctor, rejectDoctor, getAllUsers, updateUserStatus } = require('../controllers/adminController');
 const { verifyToken, verifyAdminToken } = require('../middleware/authMiddleware');
 const User = require('../models/User');
@@ -14,6 +14,9 @@ router.get('/me', verifyToken, getUserProfile);
 
 // PUT /api/auth/profile
 router.put('/profile', verifyToken, updateUserProfile);
+
+// DELETE /api/auth/profile
+router.delete('/profile', verifyToken, deleteAccount);
 
 // Admin User Management
 router.get('/admin/users', verifyAdminToken, getAllUsers);

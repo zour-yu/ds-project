@@ -72,4 +72,19 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, getUserProfile, updateUserProfile };
+// @desc    Delete user account
+// @route   DELETE /api/auth/profile
+// @access  Private
+const deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findOneAndDelete({ firebaseId: req.user.uid });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'User account deleted from database' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+module.exports = { registerUser, getUserProfile, updateUserProfile, deleteAccount };
