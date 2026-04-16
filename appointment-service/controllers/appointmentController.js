@@ -36,7 +36,8 @@ exports.createAppointment = async (req, res) => {
       name,
       age,
       symptoms,
-      report
+      report,
+      status: "PENDING_PAYMENT"
     });
 
     await appointment.save();

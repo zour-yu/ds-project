@@ -1,38 +1,82 @@
 const { sendEmail } = require("../services/emailService");
 const { sendSMS } = require("../services/smsService");
 
-// Appointment Created
+// 🔥 Reusable notification helper (IMPORTANT for clean architecture)
+const notifyUser = async (email, phone, subject, message) => {
+  await Promise.allSettled([
+    sendEmail(email, subject, message),
+    sendSMS(phone, message)
+  ]);
+};
+
+// ✅ Appointment Created
 exports.appointmentCreated = async (req, res) => {
-  const { email, phone, name, doctorId, date, time } = req.body;
+  try {
+    const { email, phone, name, date, time } = req.body;
 
-  const message = `Hi ${name}, your appointment is booked on ${date} at ${time}`;
+    const message = `Hi ${name}, your appointment is booked on ${date} at ${time}`;
 
-  await sendEmail(email, "Appointment Confirmation", message);
-  await sendSMS(phone, message);
+    await notifyUser(
+      email,
+      phone,
+      "Appointment Confirmation",
+      message
+    );
 
-  res.json({ message: "Notification sent" });
+    console.log(`Notification sent for appointmentCreated → ${email}`);
+
+    res.json({ message: "Notification sent successfully" });
+
+  } catch (err) {
+    console.error("appointmentCreated error:", err.message);
+    res.status(500).json({ error: "Notification failed" });
+  }
 };
 
-// Status Update
+// ✅ Appointment Status Update
 exports.appointmentStatus = async (req, res) => {
-  const { email, phone, name, status } = req.body;
+  try {
+    const { email, phone, name, status } = req.body;
 
-  const message = `Hi ${name}, your appointment is ${status}`;
+    const message = `Hi ${name}, your appointment is ${status}`;
 
-  await sendEmail(email, "Appointment Status Update", message);
-  await sendSMS(phone, message);
+    await notifyUser(
+      email,
+      phone,
+      "Appointment Status Update",
+      message
+    );
 
-  res.json({ message: "Notification sent" });
+    console.log(`Notification sent for appointmentStatus → ${email}`);
+
+    res.json({ message: "Notification sent successfully" });
+
+  } catch (err) {
+    console.error("appointmentStatus error:", err.message);
+    res.status(500).json({ error: "Notification failed" });
+  }
 };
 
-// Prescription Added
+// ✅ Prescription Added
 exports.prescriptionAdded = async (req, res) => {
-  const { email, phone, name } = req.body;
+  try {
+    const { email, phone, name } = req.body;
 
-  const message = `Hi ${name}, your prescription is ready`;
+    const message = `Hi ${name}, your prescription is ready`;
 
-  await sendEmail(email, "Prescription Update", message);
-  await sendSMS(phone, message);
+    await notifyUser(
+      email,
+      phone,
+      "Prescription Update",
+      message
+    );
 
-  res.json({ message: "Notification sent" });
+    console.log(`Notification sent for prescriptionAdded → ${email}`);
+
+    res.json({ message: "Notification sent successfully" });
+
+  } catch (err) {
+    console.error("prescriptionAdded error:", err.message);
+    res.status(500).json({ error: "Notification failed" });
+  }
 };

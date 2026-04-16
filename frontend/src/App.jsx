@@ -6,6 +6,8 @@ import Login from "./auth/pages/Login";
 import MainLayout from "./layouts/MainLayout";
 import PatientManagementLayout from "./layouts/PatientManagementLayout";
 import Home from "./pages/Home";
+import PaymentPage from "./payment/PaymentPage";
+import PaymentSuccess from "./payment/PaymentSuccess";
 import PatientProfile from "./patient/pages/PatientProfile";
 import PatientDashboard from "./patient/pages/PatientDashboard";
 import MedicalRecords from "./patient/pages/MedicalRecords";
