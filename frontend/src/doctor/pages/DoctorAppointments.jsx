@@ -7,7 +7,7 @@ export default function DoctorAppointments() {
   const fetchData = async () => {
     try {
       // 🔥 Step 1: get logged-in doctor
-      const docRes = await API.get("/doctors/me");
+      const docRes = await API.get("/me");
 
       const doctorId = docRes.data._id; // ✅ Mongo ID
 
