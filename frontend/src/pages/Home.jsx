@@ -1,9 +1,29 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import { subscribeToAuthChanges } from '../auth/services/authService';
 // IMPORTANT: Updated extension from .png to .jpg based on actual file existence
 import heroImage from '../assets/Home Clinic.jpg'; 
 
 const Home = () => {
+  const [userState, setUserState] = useState({ loading: true, role: null });
+
+  useEffect(() => {
+    const unsub = subscribeToAuthChanges((data) => {
+      setUserState({ 
+        loading: false, 
+        role: data?.role || null 
+      });
+    });
+    return () => unsub();
+  }, []);
+
+  if (userState.loading) return null;
+
+  // Redirect Admin away from the public Home page
+  if (userState.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
   return (
     <div className="flex-grow bg-white">
       {/* Hero Section */}

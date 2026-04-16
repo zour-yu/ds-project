@@ -8,7 +8,7 @@ import {
 import axios from "axios";
 import { auth } from "../../config/firebase";
 
-const AUTH_API = "http://localhost:5001/api/auth";
+const AUTH_API = import.meta.env.VITE_AUTH_API + "/auth";
 
 /**
  * Register a new user:

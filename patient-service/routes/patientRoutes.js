@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getPatientProfile, createPatientProfile, updatePatientProfile, uploadPatientImage, uploadPatientReport, deletePatientReport } = require('../controllers/patientController');
-const { getAllPatientProfiles, getPatientProfileById } = require('../controllers/adminController');
+const { getAllPatientProfiles, getPatientProfileById, deletePatientProfile } = require('../controllers/adminController');
 const { verifyToken, verifyAdminToken } = require('../middleware/authMiddleware');
 const { uploadProfileImage, uploadReportFile } = require('../config/cloudinary');
 
@@ -19,5 +19,6 @@ router.delete('/profile/reports/:reportId', verifyToken, deletePatientReport);
 // Define Routes for Admins
 router.get('/admin/all', verifyAdminToken, getAllPatientProfiles);
 router.get('/admin/:firebaseId', verifyAdminToken, getPatientProfileById);
+router.delete('/admin/:firebaseId', verifyAdminToken, deletePatientProfile);
 
 module.exports = router;
