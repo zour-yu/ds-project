@@ -168,7 +168,7 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route path="profile" element={<MainLayout><ProfilePage />} />
+          <Route path="profile" element={<MainLayout><ProfilePage /></MainLayout>} />
           <Route path="availability" element={<AvailabilityPage />} />
           <Route path="appointments" element={<DoctorAppointments />} />
         </Route>

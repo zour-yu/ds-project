@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { subscribeToAuthChanges, logout } from '../auth/services/authService';
-import { User, LayoutDashboard, LogOut, ChevronDown, Bell } from 'lucide-react';
+import { User, LayoutDashboard, LogOut, ChevronDown, Bell, Calendar, FileText, Pill } from 'lucide-react';
 // IMPORTANT: Update this extension (.png, .svg) if your logo file is different
 import logo from '../assets/WebLogo.png';
 
@@ -90,11 +90,6 @@ const UserNavigation = () => {
             </div>
           </div>
           <div className="flex items-center space-x-5">
-            <button className="relative p-2 text-gray-400 hover:text-teal-600 transition-colors rounded-full hover:bg-teal-50">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button 
@@ -122,6 +117,13 @@ const UserNavigation = () => {
                       <p className="text-xs text-slate-400 font-medium truncate">{user.email}</p>
                     </div>
                     <Link 
+                      to="/patient/dashboard" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
+                    >
+                      <LayoutDashboard className="w-4 h-4 mr-3 text-teal-500" /> Dashboard
+                    </Link>
+                    <Link 
                       to="/patient/profile" 
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
@@ -129,11 +131,25 @@ const UserNavigation = () => {
                       <User className="w-4 h-4 mr-3 text-teal-500" /> My Profile
                     </Link>
                     <Link 
-                      to="/patient/dashboard" 
+                      to="/patient/appointments" 
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
                     >
-                      <LayoutDashboard className="w-4 h-4 mr-3 text-teal-500" /> Dashboard
+                      <Calendar className="w-4 h-4 mr-3 text-teal-500" /> Appointments
+                    </Link>
+                    <Link 
+                      to="/patient/records" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
+                    >
+                      <FileText className="w-4 h-4 mr-3 text-teal-500" /> Medical Records
+                    </Link>
+                    <Link 
+                      to="/patient/prescriptions" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
+                    >
+                      <Pill className="w-4 h-4 mr-3 text-teal-500" /> Prescriptions
                     </Link>
                     <div className="border-t border-slate-100 mt-1.5 pt-1.5">
                       <button 
