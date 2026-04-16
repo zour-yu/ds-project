@@ -11,7 +11,7 @@ export default function AvailabilityPage() {
   });
 
   const fetchData = async () => {
-    const res = await API.get("/doctors/me");
+    const res = await API.get("/me");
     setAvailability(res.data.availability || []);
   };
 
@@ -20,7 +20,7 @@ export default function AvailabilityPage() {
   }, []);
 
   const addAvailability = async () => {
-    await API.post("/doctors/availability", form);
+    await API.post("/availability", form);
     fetchData();
   };
 
@@ -28,7 +28,7 @@ export default function AvailabilityPage() {
     const startTime = prompt("New start time (HH:mm)");
     const endTime = prompt("New end time (HH:mm)");
 
-    await API.patch("/doctors/availability/update", {
+    await API.patch("/availability/update", {
       date,
       startTime,
       endTime

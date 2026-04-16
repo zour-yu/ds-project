@@ -16,7 +16,7 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    API.get("/doctors/me")
+    API.get("/me")
       .then(res => {
         setDoctor(res.data);
 
@@ -40,10 +40,10 @@ export default function ProfilePage() {
       };
 
       if (doctor) {
-        await API.put("/doctors/me", payload);
+        await API.put("/me", payload);
         alert("Profile updated!");
       } else {
-        await API.post("/doctors/profile", payload);
+        await API.post("/profile", payload);
         alert("Profile created!");
       }
 
@@ -55,10 +55,20 @@ export default function ProfilePage() {
     }
   };
 
+  // Auto-enter edit mode if no profile exists
+  const isNewProfile = !doctor;
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
 
       <div className="max-w-4xl mx-auto">
+
+        {/* 🔹 SHOW MESSAGE IF NO PROFILE */}
+        {isNewProfile && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+            <p className="text-blue-700 font-semibold">👋 Welcome! Please create your doctor profile to get started</p>
+          </div>
+        )}
 
         {/* 🔹 PROFILE HEADER */}
         <div className="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
@@ -69,26 +79,28 @@ export default function ProfilePage() {
           />
 
           <div className="text-center md:text-left flex-1">
-            <h2 className="text-2xl font-bold">{doctor?.name}</h2>
-            <p className="text-blue-500">{doctor?.specialty}</p>
+            <h2 className="text-2xl font-bold">{doctor?.name || "Your Doctor Profile"}</h2>
+            <p className="text-blue-500">{doctor?.specialty || "Add your specialty"}</p>
 
             <p className="text-gray-600 mt-2">
-              {doctor?.qualifications?.join(", ")}
+              {doctor?.qualifications?.join(", ") || "Add qualifications"}
             </p>
 
-            <div className="flex flex-wrap gap-3 mt-3 justify-center md:justify-start">
-              <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                🏥 {doctor?.hospital}
-              </span>
+            {doctor && (
+              <div className="flex flex-wrap gap-3 mt-3 justify-center md:justify-start">
+                <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                  🏥 {doctor?.hospital}
+                </span>
 
-              <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                ⏳ {doctor?.experience} yrs exp
-              </span>
+                <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                  ⏳ {doctor?.experience} yrs exp
+                </span>
 
-              <span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-semibold">
-                💰 Rs. {doctor?.consultationFee}
-              </span>
-            </div>
+                <span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-semibold">
+                  💰 Rs. {doctor?.consultationFee}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -96,9 +108,9 @@ export default function ProfilePage() {
         <div className="bg-white rounded-2xl shadow p-6 mt-6">
 
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold">Profile Details</h3>
+            <h3 className="text-lg font-bold">{isNewProfile ? "Create Profile" : "Profile Details"}</h3>
 
-            {!editMode && (
+            {!isNewProfile && !editMode && (
               <button
                 onClick={() => setEditMode(true)}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg"
@@ -108,7 +120,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {!editMode ? (
+          {!editMode && !isNewProfile ? (
             <>
               <p className="mb-2"><b>Hospital:</b> {doctor?.hospital}</p>
               <p className="mb-2"><b>Experience:</b> {doctor?.experience} years</p>
