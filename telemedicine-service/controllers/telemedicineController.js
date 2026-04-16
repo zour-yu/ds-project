@@ -17,7 +17,7 @@ const normalizeChannelName = (value) => {
 
 exports.createSession = async (req, res) => {
   try {
-    const { appointmentId, doctorId, patientId, provider = "agora", channelName, metadata } = req.body;
+    const { appointmentId, doctorId, patientId, provider = "jitsi", channelName, metadata } = req.body;
 
     if (!appointmentId || !doctorId || !patientId) {
       return res.status(400).json({

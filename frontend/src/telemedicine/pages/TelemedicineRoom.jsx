@@ -85,7 +85,7 @@ export default function TelemedicineRoom() {
         await updateSessionStatus(id, "ENDED");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error ending session:", error);
     }
   };
 

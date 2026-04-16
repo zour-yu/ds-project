@@ -12,18 +12,31 @@ const notifyUser = async (email, phone, subject, message) => {
 // ✅ Appointment Created
 exports.appointmentCreated = async (req, res) => {
   try {
-    const { email, phone, name, date, time } = req.body;
+    const { email, phone, name, doctorEmail, doctorPhone, doctorName, date, time } = req.body;
 
-    const message = `Hi ${name}, your appointment is booked on ${date} at ${time}`;
-
+    const patientMessage = `Hi ${name}, your appointment is booked on ${date} at ${time}`;
+    
+    // Notify Patient
     await notifyUser(
       email,
       phone,
       "Appointment Confirmation",
-      message
+      patientMessage
     );
+    console.log(`Notification sent for appointmentCreated (Patient) → ${email}`);
 
-    console.log(`Notification sent for appointmentCreated → ${email}`);
+    // Notify Doctor
+    if (doctorEmail || doctorPhone) {
+      const docNameStr = doctorName || "Doctor";
+      const doctorMessage = `Hi ${docNameStr}, a new appointment has been booked by ${name} on ${date} at ${time}`;
+      await notifyUser(
+        doctorEmail,
+        doctorPhone,
+        "New Appointment Booked",
+        doctorMessage
+      );
+      console.log(`Notification sent for appointmentCreated (Doctor) → ${doctorEmail}`);
+    }
 
     res.json({ message: "Notification sent successfully" });
 

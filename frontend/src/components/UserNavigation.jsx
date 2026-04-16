@@ -15,7 +15,7 @@ const UserNavigation = () => {
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges(async (data) => {
-      setUser(data?.user || null);
+      setUser(data ? { ...data.user, role: data.role } : null);
       if (data?.user) {
         try {
           const token = await data.user.getIdToken();
@@ -48,29 +48,43 @@ const UserNavigation = () => {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    setShowDropdown(false);
-    navigate('/');
+    try {
+      await logout();
+      setShowDropdown(false);
+      navigate('/login'); // Redirect to login instead of home
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Find Doctors', path: '/doctors' },
-    { name: 'My Appointments', path: '/my-appointments' },
+    { name: 'My Appointments', path: '/patient/appointments' }, // Updated to correct route
   ];
+
+  const getLogoLink = () => {
+    // Both logged-out users and Patients should go to the public homepage
+    if (!user || user.role === 'patient') return '/';
+    if (user.role === 'admin') return '/admin/dashboard';
+    if (user.role === 'doctor') return '/doctor-dashboard/profile';
+    return '/';
+  };
 
   return (
     <nav className="bg-white border-b border-teal-50 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <img 
-              src={logo} 
-              alt="HealthEase Logo" 
-              className="h-10 w-auto mr-3 object-contain" 
-              onError={(e) => e.target.style.display = 'none'} 
-            />
-            <span className="text-2xl font-bold text-teal-600 hidden sm:block tracking-tight">HealthEase</span>
+            <Link to={getLogoLink()} className="flex items-center hover:opacity-80 transition-opacity">
+              <img 
+                src={logo} 
+                alt="HealthEase Logo" 
+                className="h-10 w-auto mr-3 object-contain" 
+                onError={(e) => e.target.style.display = 'none'} 
+              />
+              <span className="text-2xl font-bold text-teal-600 hidden sm:block tracking-tight">HealthEase</span>
+            </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
               {navItems.map((item) => (
                 <NavLink

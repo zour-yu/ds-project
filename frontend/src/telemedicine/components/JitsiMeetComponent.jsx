@@ -12,7 +12,6 @@ const resolvedDomain = !hasPort && isLocalhost && jitsiPort ? `${jitsiDomain}:${
 const getScriptCandidates = () => {
   const candidates = [];
 
-  // Prefer explicit local HTTP endpoint to avoid self-signed cert issues during development.
   if (isLocalhost && jitsiPort) {
     candidates.push(`http://${jitsiDomain}:${jitsiPort}/external_api.js`);
     candidates.push(`https://${jitsiDomain}/external_api.js`);
@@ -64,7 +63,6 @@ export default function JitsiMeetComponent({ roomName, userDisplayName, jwt, onC
           }
         });
 
-        // Jitsi UI is loaded at this point; do not block on pre-join or joined events.
         setSdkStatus("ready");
 
         apiRef.current.addEventListener("videoConferenceJoined", () => {
