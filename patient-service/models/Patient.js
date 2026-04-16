@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const emergencyContactSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    phone: { type: String, required: true },
-    relationship: { type: String, required: true }
+    name: { type: String },
+    phone: { type: String },
+    relationship: { type: String }
 }, { _id: false });
 
 const medicalHistorySchema = new mongoose.Schema({
-    condition: { type: String, required: true },
+    condition: { type: String },
     diagnosedDate: { type: Date },
     notes: { type: String }
 }, { _id: false });
