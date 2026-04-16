@@ -56,7 +56,7 @@ export default function DoctorList() {
 
       {!loading && doctors.length === 0 && (
         <div className="flex justify-center items-center min-h-96">
-          <p className="text-gray-600 text-lg">No doctors available yet.</p>
+          <p className="text-gray-600 text-lg">No doctors available yet. Newly registered doctors must complete profile setup.</p>
         </div>
       )}
 
