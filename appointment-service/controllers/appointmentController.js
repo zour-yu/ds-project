@@ -27,6 +27,21 @@ exports.createAppointment = async (req, res) => {
       time
     });
 
+    // 🔹 Get Doctor Details
+    let doctorEmail = null;
+    let doctorPhone = null;
+    let doctorName = null;
+    try {
+      const docRes = await axios.get(`${DOCTOR_SERVICE_URL}/${doctorId}`);
+      if (docRes.data) {
+        doctorEmail = docRes.data.email;
+        doctorPhone = docRes.data.phone;
+        doctorName = docRes.data.name;
+      }
+    } catch (docErr) {
+      console.error("Error fetching doctor details:", docErr.message);
+    }
+
     // 🔹 Save appointment
     const appointment = new Appointment({
       doctorId,
@@ -49,6 +64,9 @@ exports.createAppointment = async (req, res) => {
         phone,
         name,
         doctorId,
+        doctorEmail,
+        doctorPhone,
+        doctorName,
         date,
         time
       });
