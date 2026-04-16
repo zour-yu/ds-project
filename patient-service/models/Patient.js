@@ -16,7 +16,7 @@ const medicalReportSchema = new mongoose.Schema({
     fileName: { type: String, required: true },
     fileUrl: { type: String, required: true }, // The Cloudinary link
     uploadedAt: { type: Date, default: Date.now }
-}, { _id: false });
+}); // Removed { _id: false } so we can delete by ID
 
 const patientSchema = new mongoose.Schema({
     // Primary link to the auth-service Identity (from Firebase)

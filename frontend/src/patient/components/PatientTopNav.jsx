@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { subscribeToAuthChanges, logout } from '../../auth/services/authService';
-import { ChevronDown, User, LayoutDashboard, Calendar, FileText, MessageSquare, LogOut, Bell } from 'lucide-react';
+import { ChevronDown, User, LayoutDashboard, Calendar, FileText, Pill, LogOut, Bell } from 'lucide-react';
 
 const PatientTopNav = () => {
   const [user, setUser] = useState(null);
@@ -10,6 +10,7 @@ const PatientTopNav = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsub = subscribeToAuthChanges(async (data) => {
@@ -54,26 +55,32 @@ const PatientTopNav = () => {
     }
   };
 
+  const getPageTitle = () => {
+    switch (location.pathname) {
+      case '/patient/dashboard': return 'Dashboard';
+      case '/patient/profile': return 'My Profile';
+      case '/patient/appointments': return 'Appointments';
+      case '/patient/records': return 'Medical Records';
+      case '/patient/prescriptions': return 'Prescriptions';
+      default: return 'Overview';
+    }
+  };
+
   const menuItems = [
     { name: 'My Profile', path: '/patient/profile', icon: User },
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
     { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
-    { name: 'Messages', path: '/patient/messages', icon: MessageSquare },
+    { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
   ];
 
   return (
     <header className="h-16 bg-white border-b border-teal-50 flex items-center justify-between px-6 fixed top-0 right-0 left-0 md:left-64 z-[50] transition-all duration-300">
-      {/* Left side - Page Title or Global Search */}
+      {/* Left side - Page Title */}
       <div className="flex items-center flex-1">
-        <div className="relative w-full max-w-md hidden sm:block">
-          <input 
-            type="text" 
-            placeholder="Search doctors, appointments..." 
-            className="w-full bg-slate-50 border border-teal-50 text-gray-800 rounded-full pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-          />
-          <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
-        </div>
+        <h2 className="text-lg font-black text-slate-800 tracking-tight">
+          {getPageTitle()}
+        </h2>
       </div>
 
       {/* Right side - Profile & Notifications */}

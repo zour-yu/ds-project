@@ -8,6 +8,8 @@ import PatientManagementLayout from "./layouts/PatientManagementLayout";
 import Home from "./pages/Home";
 import PatientProfile from "./patient/pages/PatientProfile";
 import PatientDashboard from "./patient/pages/PatientDashboard";
+import MedicalRecords from "./patient/pages/MedicalRecords";
+import Prescriptions from "./patient/pages/Prescriptions";
 
 const PrivateRoute = ({ children, allowedRole }) => {
   const [userState, setUserState] = useState({ loading: true, user: null, role: null });
@@ -60,6 +62,28 @@ function App() {
             <PrivateRoute allowedRole="patient">
               <PatientManagementLayout>
                 <PatientProfile />
+              </PatientManagementLayout>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/patient/records" 
+          element={
+            <PrivateRoute allowedRole="patient">
+              <PatientManagementLayout>
+                <MedicalRecords />
+              </PatientManagementLayout>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/patient/prescriptions" 
+          element={
+            <PrivateRoute allowedRole="patient">
+              <PatientManagementLayout>
+                <Prescriptions />
               </PatientManagementLayout>
             </PrivateRoute>
           } 

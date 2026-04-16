@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getPatientProfile, createPatientProfile, updatePatientProfile, uploadPatientImage, uploadPatientReport } = require('../controllers/patientController');
+const { getPatientProfile, createPatientProfile, updatePatientProfile, uploadPatientImage, uploadPatientReport, deletePatientReport } = require('../controllers/patientController');
 const { getAllPatientProfiles, getPatientProfileById } = require('../controllers/adminController');
 const { verifyToken, verifyAdminToken } = require('../middleware/authMiddleware');
 const { uploadProfileImage, uploadReportFile } = require('../config/cloudinary');
@@ -14,6 +14,7 @@ router.put('/profile', verifyToken, updatePatientProfile);
 // Multer middleware sits between verification and your logic
 router.post('/profile/image', verifyToken, uploadProfileImage.single('image'), uploadPatientImage);
 router.post('/profile/reports', verifyToken, uploadReportFile.single('report'), uploadPatientReport);
+router.delete('/profile/reports/:reportId', verifyToken, deletePatientReport);
 
 // Define Routes for Admins
 router.get('/admin/all', verifyAdminToken, getAllPatientProfiles);

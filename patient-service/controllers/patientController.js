@@ -123,9 +123,38 @@ const uploadPatientReport = async (req, res) => {
         patient.medicalReports.push(newReport);
         await patient.save();
 
-        res.status(200).json({ message: 'Medical report uploaded', newReport });
+        res.status(200).json({ message: 'Medical report uploaded', medicalReports: patient.medicalReports });
     } catch (error) {
         console.error('Error uploading medical report:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+// @route   DELETE /api/patients/profile/reports/:reportId
+// @desc    Delete a medical report
+// @access  Private (Patient only)
+const deletePatientReport = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        
+        let patient = await Patient.findOne({ firebaseId: req.user.firebaseId });
+        if (!patient) {
+            return res.status(404).json({ message: 'Patient profile not found.' });
+        }
+
+        // Support both _id based deletion or fallback to fileUrl URL encoding
+        patient.medicalReports = patient.medicalReports.filter(report => {
+            if (report._id && report._id.toString() === reportId) return false;
+            // Fallback if no _id exists on legacy records (encode comparison)
+            if (encodeURIComponent(report.fileUrl) === reportId) return false;
+            return true;
+        });
+        
+        await patient.save();
+
+        res.status(200).json({ message: 'Medical report deleted', medicalReports: patient.medicalReports });
+    } catch (error) {
+        console.error('Error deleting medical report:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
@@ -135,5 +164,6 @@ module.exports = {
     createPatientProfile,
     updatePatientProfile,
     uploadPatientImage,
-    uploadPatientReport
+    uploadPatientReport,
+    deletePatientReport
 };
