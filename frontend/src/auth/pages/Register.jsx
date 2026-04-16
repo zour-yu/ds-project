@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { register } from '../services/authService';
+import { register, logout } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Phone, MapPin, ArrowRight, UserPlus } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';

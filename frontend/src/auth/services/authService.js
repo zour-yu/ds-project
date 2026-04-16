@@ -8,7 +8,7 @@ import {
 import axios from "axios";
 import { auth } from "../../config/firebase";
 
-const AUTH_API = import.meta.env.VITE_AUTH_API + "/auth";
+const AUTH_API = import.meta.env.VITE_AUTH_API;
 
 const resolveDoctorApiBase = () => {
   const raw = import.meta.env.VITE_DOCTOR_API;
@@ -94,7 +94,11 @@ export const subscribeToAuthChanges = (callback) => {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
       const tokenResult = await getIdTokenResult(user);
-      callback({ user, role: tokenResult.claims.role });
+      callback({
+        user,
+        role: tokenResult.claims.role,
+        claims: tokenResult.claims // Expose full claims for verification check
+      });
     } else {
       callback(null);
     }

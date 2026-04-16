@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import API from "../services/doctorApi";
 
 export default function DoctorAppointments() {
@@ -8,16 +9,14 @@ export default function DoctorAppointments() {
     try {
       // 🔥 Step 1: get logged-in doctor
       const docRes = await API.get("/me");
-
       const doctorId = docRes.data._id; // ✅ Mongo ID
 
       // 🔥 Step 2: fetch appointments
-      const res = await API.get(
-       `${import.meta.env.VITE_APPOINTMENT_API}/appointments/doctor/${doctorId}`
+      const res = await axios.get(
+       `${import.meta.env.VITE_APPOINTMENT_API}/doctor/${doctorId}`
       );
 
       setAppointments(res.data);
-
     } catch (err) {
       console.error(err);
     }
@@ -28,8 +27,8 @@ export default function DoctorAppointments() {
   }, []);
 
   const updateStatus = async (id, status) => {
-    await API.patch(
-       `${import.meta.env.VITE_APPOINTMENT_API}/appointments/${id}/status`,
+    await axios.patch(
+       `${import.meta.env.VITE_APPOINTMENT_API}/${id}/status`,
       { status }
     );
     fetchData();

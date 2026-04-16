@@ -16,7 +16,7 @@ const UserNavigation = () => {
   useEffect(() => {
     const unsub = subscribeToAuthChanges(async (data) => {
       setUser(data ? { ...data.user, role: data.role } : null);
-      if (data?.user) {
+      if (data?.user && data.role === 'patient') {
         try {
           const token = await data.user.getIdToken();
           const response = await axios.get(`${import.meta.env.VITE_PATIENT_API}/profile`, {

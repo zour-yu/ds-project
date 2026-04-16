@@ -104,12 +104,20 @@ const AdminPatients = () => {
     setIsUpdating(true);
     try {
       const auth = getAuth();
-      const token = await auth.currentUser.getIdToken();
+      const user = auth.currentUser;
+      const token = await user.getIdToken();
       
-      const response = await axios.put(`${import.meta.env.VITE_PATIENT_API}/admin/${editingPatient.firebaseId}`, {
+      // 1. Update Profile in Patient Service
+      await axios.put(`${import.meta.env.VITE_PATIENT_API}/admin/${editingPatient.firebaseId}`, {
         name: editingPatient.name,
         phone: editingPatient.phone,
-        address: editingPatient.address,
+        address: editingPatient.address
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // 2. Update Account Status in Auth Service
+      await axios.patch(`${import.meta.env.VITE_AUTH_API}/admin/users/${editingPatient.firebaseId}/status`, {
         activeStatus: editingPatient.activeStatus
       }, {
         headers: { Authorization: `Bearer ${token}` }

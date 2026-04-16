@@ -15,11 +15,21 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { role } = await login(email, password);
+            const { user, role } = await login(email, password);
             toast.success('Login successful!');
-            if (role === 'doctor') navigate('/doctor-dashboard/profile');
-            else if (role === 'admin') navigate('/admin/dashboard');
-            else navigate('/patient/dashboard');
+            
+            if (role === 'doctor') {
+                const tokenResult = await user.getIdTokenResult();
+                if (!tokenResult.claims.isVerified) {
+                    navigate('/waiting');
+                } else {
+                    navigate('/doctor-dashboard/profile');
+                }
+            } else if (role === 'admin') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/patient/dashboard');
+            }
         } catch (error) {
             toast.error(typeof error === 'string' ? error : 'Login failed');
         } finally {

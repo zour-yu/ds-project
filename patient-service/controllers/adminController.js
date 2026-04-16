@@ -11,7 +11,8 @@ const User = authDbConnection.model('User', new mongoose.Schema({
     name: String,
     role: String,
     phoneNumber: String,
-    address: String
+    address: String,
+    activeStatus: String
 }));
 
 // @route   GET /api/patients/admin/all
@@ -36,7 +37,7 @@ const getAllPatientProfiles = async (req, res) => {
                 email: user.email,
                 phone: user.phoneNumber || 'No phone',
                 address: user.address || 'No address',
-                activeStatus: medicalProfile ? (medicalProfile.activeStatus || 'Active') : 'Active'
+                activeStatus: user.activeStatus || 'Active' // Now uses User model status
             };
         }));
 
@@ -92,7 +93,7 @@ const deletePatientProfile = async (req, res) => {
 const updatePatientProfileByAdmin = async (req, res) => {
     try {
         const { firebaseId } = req.params;
-        const { name, phone, address, activeStatus } = req.body;
+        const { name, phone, address } = req.body; // activeStatus removed here, handled by Auth-Service directly
 
         // 1. Update User info in Auth DB
         await User.findOneAndUpdate(
@@ -101,17 +102,11 @@ const updatePatientProfileByAdmin = async (req, res) => {
             { new: true }
         );
 
-        // 2. Update Medical profile info (activeStatus) in Patient DB
-        // If profile doesn't exist yet, we still track the activeStatus
-        let medicalProfile = await Patient.findOneAndUpdate(
-            { firebaseId },
-            { activeStatus },
-            { new: true, upsert: true } // Upsert because admin might set status before patient fills profile
-        );
+        // Note: activeStatus is now updated via Auth-Service in frontend
+        // If we want to keep it in sync here, we could add { activeStatus } but better to let Auth be the source of truth
 
         res.status(200).json({ 
-            message: 'User and medical profile updated successfully.',
-            profile: medicalProfile 
+            message: 'User profile updated successfully.'
         });
     } catch (error) {
         console.error("Error updating patient profile by admin:", error);
