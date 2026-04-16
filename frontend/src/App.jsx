@@ -117,6 +117,15 @@ function App() {
         />
 
         <Route
+          path="/patient/appointments"
+          element={
+            <PrivateRoute allowedRole="patient">
+              <Navigate to="/my-appointments" replace />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/my-appointments"
           element={
             <PrivateRoute allowedRole="patient">

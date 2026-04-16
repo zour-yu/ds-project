@@ -60,7 +60,7 @@ const UserNavigation = () => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Find Doctors', path: '/doctors' },
-    { name: 'My Appointments', path: '/patient/appointments' }, // Updated to correct route
+    { name: 'My Appointments', path: '/my-appointments' },
   ];
 
   const getLogoLink = () => {
@@ -145,7 +145,7 @@ const UserNavigation = () => {
                       <User className="w-4 h-4 mr-3 text-teal-500" /> My Profile
                     </Link>
                     <Link 
-                      to="/patient/appointments" 
+                      to="/my-appointments" 
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all font-semibold"
                     >

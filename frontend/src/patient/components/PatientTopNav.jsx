@@ -59,7 +59,8 @@ const PatientTopNav = () => {
     switch (location.pathname) {
       case '/patient/dashboard': return 'Dashboard';
       case '/patient/profile': return 'My Profile';
-      case '/patient/appointments': return 'Appointments';
+      case '/patient/appointments':
+      case '/my-appointments': return 'Appointments';
       case '/patient/records': return 'Medical Records';
       case '/patient/prescriptions': return 'Prescriptions';
       default: return 'Overview';
@@ -70,7 +71,7 @@ const PatientTopNav = () => {
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', path: '/patient/profile', icon: User },
     
-    { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
+    { name: 'Appointments', path: '/my-appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
     { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
   ];

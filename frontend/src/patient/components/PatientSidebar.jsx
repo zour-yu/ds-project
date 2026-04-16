@@ -35,7 +35,7 @@ const PatientSidebar = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', path: '/patient/profile', icon: UserCircle },
-    { name: 'Appointments', path: '/patient/appointments', icon: Calendar },
+    { name: 'Appointments', path: '/my-appointments', icon: Calendar },
     { name: 'Medical Records', path: '/patient/records', icon: FileText },
     { name: 'Prescriptions', path: '/patient/prescriptions', icon: Pill },
   ];
