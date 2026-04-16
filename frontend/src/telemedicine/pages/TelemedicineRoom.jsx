@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, Mic, MicOff, PhoneCall, RefreshCw } from "lucide-react";
 import { auth } from "../../config/firebase";
 import { generateJoinToken, getSessionById, updateSessionStatus } from "../services/telemedicineApi";
+import JitsiMeetComponent from "../components/JitsiMeetComponent";
 
 export default function TelemedicineRoom() {
   const { id } = useParams();
@@ -11,11 +12,12 @@ export default function TelemedicineRoom() {
   const [tokenData, setTokenData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [inCall, setInCall] = useState(false);
   const [cameraOn, setCameraOn] = useState(true);
   const [micOn, setMicOn] = useState(true);
   const [role, setRole] = useState("host");
 
-  const loadSession = async () => {
+  const loadSession = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getSessionById(id);
@@ -25,11 +27,11 @@ export default function TelemedicineRoom() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     loadSession();
-  }, [id]);
+  }, [loadSession]);
 
   const handleJoin = async () => {
     try {
@@ -39,9 +41,13 @@ export default function TelemedicineRoom() {
         role,
         expireInSeconds: 3600
       });
+      if (!data?.token) {
+        throw new Error(data?.note || "Jitsi token is required for this room");
+      }
       setTokenData(data);
       await updateSessionStatus(id, "LIVE");
       await loadSession();
+      setInCall(true);
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.message || error.message || "Unable to join session");
@@ -52,10 +58,20 @@ export default function TelemedicineRoom() {
 
   const handleLeave = async () => {
     try {
+      setInCall(false);
       await updateSessionStatus(id, "ENDED");
       navigate(-1);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleJitsiClose = async () => {
+    setInCall(false);
+    try {
+      await updateSessionStatus(id, "ENDED");
+    } catch (error) {
+      console.error("Error ending session:", error);
     }
   };
 
@@ -65,6 +81,17 @@ export default function TelemedicineRoom() {
 
   if (!session) {
     return <div className="rounded-2xl bg-white p-6 text-slate-600 shadow-sm">Session not found.</div>;
+  }
+
+  if (inCall && session.provider === "jitsi") {
+    return (
+      <JitsiMeetComponent
+        roomName={session.channelName}
+        userDisplayName={auth.currentUser?.displayName || auth.currentUser?.email || "Guest"}
+        jwt={tokenData?.token}
+        onClose={handleJitsiClose}
+      />
+    );
   }
 
   return (

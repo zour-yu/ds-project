@@ -7,7 +7,7 @@ import { createSession, generateJoinToken, listSessions, updateSessionStatus } f
 const initialForm = {
   appointmentId: "",
   patientId: "",
-  provider: "agora",
+  provider: "jitsi",
   channelName: "",
   role: "host",
   expireInSeconds: 3600
