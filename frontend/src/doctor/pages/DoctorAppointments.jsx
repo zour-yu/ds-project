@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import API from "../services/doctorApi";
 
 export default function DoctorAppointments() {
@@ -8,16 +9,14 @@ export default function DoctorAppointments() {
     try {
       // 🔥 Step 1: get logged-in doctor
       const docRes = await API.get("/me");
-
       const doctorId = docRes.data._id; // ✅ Mongo ID
 
       // 🔥 Step 2: fetch appointments
-      const res = await API.get(
-       `${import.meta.env.VITE_APPOINTMENT_API}/appointments/doctor/${doctorId}`
+      const res = await axios.get(
+       `${import.meta.env.VITE_APPOINTMENT_API}/doctor/${doctorId}`
       );
 
       setAppointments(res.data);
-
     } catch (err) {
       console.error(err);
     }
@@ -52,8 +51,9 @@ export default function DoctorAppointments() {
 
           {a.report && (
             <a
-              href={`http://localhost:5002/uploads/${a.report}`}
+              href={`${import.meta.env.VITE_APPOINTMENT_API.replace(/\/api$/, "")}/uploads/${a.report}`}
               target="_blank"
+              rel="noreferrer"
               className="text-blue-500"
             >
               View Report
@@ -64,14 +64,14 @@ export default function DoctorAppointments() {
 
           <div className="mt-2">
             <button
-              onClick={() => updateStatus(a._id, "approved")}
+              onClick={() => updateStatus(a._id, "CONFIRMED")}
               className="bg-green-500 text-white px-3 py-1 mr-2"
             >
               Approve
             </button>
 
             <button
-              onClick={() => updateStatus(a._id, "rejected")}
+              onClick={() => updateStatus(a._id, "REJECTED")}
               className="bg-red-500 text-white px-3 py-1"
             >
               Reject
